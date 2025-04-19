@@ -45,7 +45,7 @@ class _AuthScreenState extends State<AuthScreen> {
       );
 
       if (user != null) {
-        Navigator.pushReplacementNamed(context, '/main', arguments: user);
+        Navigator.pushNamed(context, '/main', arguments: user.id);
       } else {
         setState(() {
           _errorMessage = 'Неверное имя пользователя или пароль';

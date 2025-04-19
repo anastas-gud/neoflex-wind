@@ -15,11 +15,12 @@ class DatabaseService {
     String? username,
     String? password,
     int? port,
-  })  : _host = host ?? '192.168.56.1',
+  })  : _host = host ?? '10.0.2.2',
         _database = database ?? 'neoflex_quest',
         _username = username ?? 'postgres',
         _password = password ?? 'password',
         _port = port ?? 5432;
+
 
   Future<PostgreSQLConnection> getConnection() async {
     final connection = PostgreSQLConnection(
@@ -34,8 +35,13 @@ class DatabaseService {
     );
 
     await Future.delayed(Duration(seconds: 5));
-    await connection.open();
-    return connection;
+    try {
+      await connection.open();
+      return connection;
+    } catch (e) {
+      print('Connection error: $e');
+      rethrow;
+    }
   }
 
   Future<void> initDatabase() async {

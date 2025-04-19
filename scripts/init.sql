@@ -1,14 +1,16 @@
+CREATE EXTENSION IF NOT EXISTS pgcrypto;
+
 UPDATE pg_database SET datcollate = 'en_US.UTF-8', datctype = 'en_US.UTF-8'
 WHERE datname = 'neoflex_quest';
 
 -- Создание таблицы пользователей
 CREATE TABLE users (
-    id SERIAL PRIMARY KEY,
-    username VARCHAR(50) UNIQUE NOT NULL,
-    password VARCHAR(100) NOT NULL,
-    email VARCHAR(100) UNIQUE,
-    points INTEGER DEFAULT 0,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+  id SERIAL PRIMARY KEY,
+  username VARCHAR(50) UNIQUE NOT NULL,
+  email VARCHAR(100) UNIQUE,
+  password TEXT NOT NULL,
+  points INTEGER DEFAULT 0,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
 -- Таблица достижений

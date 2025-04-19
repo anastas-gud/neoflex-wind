@@ -57,9 +57,9 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
           SnackBar(content: Text('Регистрация успешна! Теперь войдите в систему')),
         );
       }
-    } catch (e) {
+    } on Exception catch (e) { // Ловим конкретно Exception
       setState(() {
-        _errorMessage = e.toString();
+        _errorMessage = e.toString().replaceAll('Exception: ', ''); // Убираем префикс
       });
     } finally {
       setState(() {

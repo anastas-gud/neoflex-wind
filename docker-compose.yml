@@ -15,6 +15,15 @@ services:
     networks:
       - postgres_net
 
+#  flutter_app:
+#    build: .
+#    ports:
+#      - "8080:80"
+#    networks:
+#      - postgres_net
+#    depends_on:
+#      - postgres
+
 networks:
   postgres_net:
     driver: bridge

@@ -1,5 +1,6 @@
 import 'package:neoflex_quest/core/models/user.dart';
 import 'package:neoflex_quest/core/database/database_service.dart';
+import 'package:postgres/postgres.dart';
 
 class AuthService {
   final DatabaseService _databaseService;
@@ -12,7 +13,7 @@ class AuthService {
     final conn = await _databaseService.getConnection();
     try {
       final results = await conn.query(
-        'SELECT id, username, email, points FROM users WHERE username = @username AND password = crypt(@password, password)',
+        'SELECT id, username, email, points FROM users WHERE username = @username AND password = @password',
         substitutionValues: {
           'username': username,
           'password': password,
@@ -20,11 +21,12 @@ class AuthService {
       );
 
       if (results.isNotEmpty) {
+        final row = results[0];
         return User(
-          id: results[0][0] as int,
-          username: results[0][1] as String,
-          email: results[0][2] as String,
-          points: results[0][3] as int,
+          id: row[0] is int ? row[0] as int : int.parse(row[0].toString()),
+          username: row[1] as String,
+          email: row[2]?.toString() ?? '',
+          points: row[3] is int ? row[3] as int : int.parse(row[3].toString()),
         );
       }
       return null;
@@ -44,26 +46,25 @@ class AuthService {
       throw Exception('Пароли не совпадают');
     }
 
-    if (password.length < 6) {
-      throw Exception('Пароль должен содержать минимум 6 символов');
-    }
-
     final conn = await _databaseService.getConnection();
     try {
-      await conn.query(
-        'INSERT INTO users (username, email, password) VALUES (@username, @email, crypt(@password, gen_salt(\'bf\')))',
+      await conn.execute(
+        '''
+      INSERT INTO users (username, email, password)
+      VALUES (@username, @email, @password)
+      ''',
         substitutionValues: {
           'username': username,
           'email': email,
-          'password': password,
+          'password': password, // Пароль сохраняется в открытом виде!
         },
       );
       return true;
-    } catch (e) {
-      if (e.toString().contains('unique constraint')) {
+    } on PostgreSQLException catch (e) {
+      if (e.message!.contains('unique constraint')) {
         throw Exception('Пользователь с таким именем или email уже существует');
       }
-      throw Exception('Ошибка регистрации: $e');
+      throw Exception('Ошибка регистрации: ${e.message}');
     } finally {
       await conn.close();
     }
