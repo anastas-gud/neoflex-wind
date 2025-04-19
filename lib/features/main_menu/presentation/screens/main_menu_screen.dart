@@ -31,7 +31,9 @@ class _MainMenuScreenState extends State<MainMenuScreen> {
 
   Future<User?> _loadUser() async {
     final authService = AuthService(databaseService: DatabaseService());
-    return await authService.getUserById(widget.userId);
+    //todo раскомментить и удалить тестового пользователя
+    // return await authService.getUserById(widget.userId);
+    return User(id: 1, username: "test", email: "test", points: 50);
   }
 
   void _logout() async {

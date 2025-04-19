@@ -1,41 +1,73 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 
 class MascotWidget extends StatelessWidget {
+  final String title;
   final String message;
   final double mascotSize;
+  final double boxWidth;
 
   const MascotWidget({
+    this.title = '',
     required this.message,
     this.mascotSize = 100,
+    this.boxWidth = 300,
     Key? key,
   }) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.all(16.0),
-      child: Column(
-        children: [
-          Image.asset(
-            'assets/images/mascot.png',
-            width: mascotSize,
-            height: mascotSize,
-            errorBuilder: (_, __, ___) => Icon(Icons.android, size: mascotSize),
+    return ConstrainedBox(
+      constraints: BoxConstraints(maxWidth: boxWidth),
+      child: Center(
+        child: Padding(
+          padding: const EdgeInsets.all(15),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              Container(
+                constraints: BoxConstraints(maxWidth: boxWidth * 0.5),
+                padding: const EdgeInsets.all(15),
+                decoration: BoxDecoration(
+                  color: Colors.orange[50],
+                  borderRadius: BorderRadius.circular(15),
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    if (title.isNotEmpty)
+                      Padding(
+                        padding: const EdgeInsets.only(bottom: 5),
+                        child: Text(
+                          title,
+                          style: const TextStyle(
+                            fontSize: 20,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ),
+                    Text(
+                      message,
+                      style: const TextStyle(fontSize: 16),
+                      softWrap: true,
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(width: 15),
+              SvgPicture.asset(
+                'assets/svg/neonchik.svg',
+                width: mascotSize,
+                height: mascotSize,
+                placeholderBuilder: (context) => CircularProgressIndicator(),
+                errorBuilder:
+                    (_, __, ___) => Icon(Icons.android, size: mascotSize),
+              ),
+            ],
           ),
-          SizedBox(height: 16),
-          Container(
-            padding: EdgeInsets.all(16),
-            decoration: BoxDecoration(
-              color: Colors.orange[50],
-              borderRadius: BorderRadius.circular(12),
-            ),
-            child: Text(
-              message,
-              style: TextStyle(fontSize: 16),
-              textAlign: TextAlign.center,
-            ),
-          ),
-        ],
+        ),
       ),
     );
   }

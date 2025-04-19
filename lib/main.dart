@@ -8,12 +8,12 @@ void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
   // Инициализация базы данных
-  final dbService = DatabaseService();
-  await dbService.initDatabase();
+  // final dbService = DatabaseService();
+  // await dbService.initDatabase();
 
   runApp(
     MaterialApp(
-      title: 'Neoflex Quest',
+      title: 'NeoQuestopia',
       theme: ThemeData(
         primarySwatch: Colors.orange,
         visualDensity: VisualDensity.adaptivePlatformDensity,

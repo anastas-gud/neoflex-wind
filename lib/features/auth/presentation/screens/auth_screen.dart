@@ -1,11 +1,13 @@
+import 'dart:math';
+
 import 'package:flutter/material.dart';
 import 'package:neoflex_quest/core/services/auth_service.dart';
 import 'package:neoflex_quest/core/database/database_service.dart';
 import 'package:neoflex_quest/features/auth/presentation/screens/registration_screen.dart';
-import 'package:neoflex_quest/features/auth/presentation/screens/registration_screen.dart';
 import 'package:neoflex_quest/shared/widgets/mascot_widget.dart';
+import 'package:neoflex_quest/shared/widgets/secondary_button.dart';
 
-import '../../../../core/database/database_service.dart';
+import '../../../../core/models/user.dart';
 
 class AuthScreen extends StatefulWidget {
   @override
@@ -39,16 +41,17 @@ class _AuthScreenState extends State<AuthScreen> {
     });
 
     try {
-      final user = await _authService.authenticate(
-        _usernameController.text.trim(),
-        _passwordController.text,
-      );
-
+      //todo раскомментить и удалить тестового пользователя
+      // final user = await _authService.authenticate(
+      //   _usernameController.text.trim(),
+      //   _passwordController.text,
+      // );
+      final user = User(id: 1, username: "test", email: "test", points: 50);
       if (user != null) {
         Navigator.pushNamed(context, '/main', arguments: user.id);
       } else {
         setState(() {
-          _errorMessage = 'Неверное имя пользователя или пароль';
+          _errorMessage = 'Неверный логин или пароль';
         });
       }
     } catch (e) {
@@ -64,82 +67,100 @@ class _AuthScreenState extends State<AuthScreen> {
 
   @override
   Widget build(BuildContext context) {
+    double _boxWidth = min(MediaQuery.of(context).size.width * 0.75, 400);
     return Scaffold(
-      body: SingleChildScrollView(
-        child: Padding(
-          padding: const EdgeInsets.all(24.0),
-          child: Form(
-            key: _formKey,
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                SizedBox(height: 40),
-                MascotWidget(
-                  message: 'Обнаружен новый пользовательский профиль...\n'
-                      'Сканирование... Загрузка данных...',
-                ),
-                SizedBox(height: 40),
-                TextFormField(
-                  controller: _usernameController,
-                  decoration: InputDecoration(
-                    labelText: 'Логин',
-                    prefixIcon: Icon(Icons.person),
-                    border: OutlineInputBorder(),
+      body: Center(
+        child: SingleChildScrollView(
+          child: Padding(
+            padding: const EdgeInsets.all(15.0),
+            child: Form(
+              key: _formKey,
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  MascotWidget(
+                    boxWidth: _boxWidth,
+                    mascotSize: _boxWidth * 0.35,
+                    title: "Бип-бип!",
+                    message:
+                        'Для прохождения квеста введите свой логин и пароль...',
                   ),
-                  validator: (value) {
-                    if (value == null || value.isEmpty) {
-                      return 'Введите логин';
-                    }
-                    return null;
-                  },
-                ),
-                SizedBox(height: 16),
-                TextFormField(
-                  controller: _passwordController,
-                  decoration: InputDecoration(
-                    labelText: 'Пароль',
-                    prefixIcon: Icon(Icons.lock),
-                    border: OutlineInputBorder(),
-                  ),
-                  obscureText: true,
-                  validator: (value) {
-                    if (value == null || value.isEmpty) {
-                      return 'Введите пароль';
-                    }
-                    if (value.length < 6) {
-                      return 'Пароль должен содержать минимум 6 символов';
-                    }
-                    return null;
-                  },
-                ),
-                SizedBox(height: 24),
-                if (_errorMessage != null)
-                  Padding(
-                    padding: const EdgeInsets.only(bottom: 16),
-                    child: Text(
-                      _errorMessage!,
-                      style: TextStyle(color: Colors.red),
+                  SizedBox(height: 30),
+                  ConstrainedBox(
+                    constraints: BoxConstraints(maxWidth: _boxWidth),
+                    child: TextFormField(
+                      controller: _usernameController,
+                      decoration: InputDecoration(
+                        labelText: 'Логин',
+                        prefixIcon: Icon(Icons.person),
+                        border: OutlineInputBorder(),
+                      ),
+                      validator: (value) {
+                        if (value == null || value.isEmpty) {
+                          return 'Введите логин';
+                        }
+                        return null;
+                      },
                     ),
                   ),
-                SizedBox(
-                  width: double.infinity,
-                  child: ElevatedButton(
-                    onPressed: _isLoading ? null : _login,
-                    child: _isLoading
-                        ? CircularProgressIndicator(color: Colors.white)
-                        : Text('Войти'),
+                  SizedBox(height: 15),
+                  ConstrainedBox(
+                    constraints: BoxConstraints(maxWidth: _boxWidth),
+                    child: TextFormField(
+                      controller: _passwordController,
+                      decoration: InputDecoration(
+                        labelText: 'Пароль',
+                        prefixIcon: Icon(Icons.lock),
+                        border: OutlineInputBorder(),
+                      ),
+                      obscureText: true,
+                      validator: (value) {
+                        if (value == null || value.isEmpty) {
+                          return 'Введите пароль';
+                        }
+                        if (value.length < 6) {
+                          return 'Пароль должен содержать минимум 6 символов';
+                        }
+                        return null;
+                      },
+                    ),
                   ),
-                ),
-                TextButton(
-                  onPressed: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(builder: (context) => RegistrationScreen()),
-                    );
-                  },
-                  child: Text('Еще нет аккаунта? Зарегистрируйтесь'),
-                ),
-              ],
+                  SizedBox(height: 30),
+                  if (_errorMessage != null)
+                    Padding(
+                      padding: const EdgeInsets.only(bottom: 15),
+                      child: Text(
+                        _errorMessage!,
+                        style: TextStyle(color: Colors.red),
+                      ),
+                    ),
+                  SecondaryButtonWidget(
+                    boxWidth: _boxWidth,
+                    text: "Войти",
+                    onPressed: _isLoading ? null : _login,
+                    child:
+                        _isLoading
+                            ? CircularProgressIndicator(color: Colors.white)
+                            : null,
+                  ),
+                  SizedBox(height: 30),
+                  Text("Еще нет аккаунта?"),
+                  SizedBox(height: 30),
+                  SecondaryButtonWidget(
+                    boxWidth: _boxWidth,
+                    text: "Создать аккаунт",
+                    onPressed: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => RegistrationScreen(),
+                        ),
+                      );
+                    },
+                  ),
+                ],
+              ),
             ),
           ),
         ),
