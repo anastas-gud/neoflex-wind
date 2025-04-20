@@ -7,8 +7,13 @@ import '../../../../shared/widgets/mascot_widget.dart';
 
 class ShopScreen extends StatefulWidget {
   final int userId;
+  final VoidCallback onUpdate;
 
-  const ShopScreen({required this.userId, Key? key}) : super(key: key);
+  const ShopScreen({
+    required this.userId,
+    required this.onUpdate,
+    Key? key,
+  }) : super(key: key);
 
   @override
   _ShopScreenState createState() => _ShopScreenState();
@@ -30,23 +35,6 @@ class _ShopScreenState extends State<ShopScreen> {
     return await shopService.getShopItems();
   }
 
-  void _handleMandarinTap() {
-    final now = DateTime.now();
-    if (_lastTapTime == null || now.difference(_lastTapTime!) > Duration(seconds: 1)) {
-      _tapCount = 0;
-    }
-
-    _tapCount++;
-    _lastTapTime = now;
-
-    if (_tapCount >= 5) {
-      _tapCount = 0;
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Секретное достижение разблокировано! +10 мандаринок')),
-      );
-    }
-  }
-
   Future<void> _buyItem(ShopItem item) async {
     final shopService = ShopService(databaseService: DatabaseService());
     try {
@@ -56,6 +44,7 @@ class _ShopScreenState extends State<ShopScreen> {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text('Покупка совершена!')),
         );
+        widget.onUpdate(); // Вызываем callback для обновления главного экрана
         setState(() {
           _itemsFuture = _loadItems(); // Обновляем список товаров
         });
@@ -94,7 +83,6 @@ class _ShopScreenState extends State<ShopScreen> {
               Divider(),
               Expanded(
                 child: ListView.builder(
-                  padding: EdgeInsets.all(16),
                   itemCount: items.length,
                   itemBuilder: (context, index) {
                     final item = items[index];

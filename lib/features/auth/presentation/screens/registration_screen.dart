@@ -8,6 +8,7 @@ import 'package:neoflex_quest/shared/widgets/mascot_widget.dart';
 import 'package:neoflex_quest/shared/widgets/secondary_button.dart';
 import 'package:neoflex_quest/shared/widgets/text_field_widget.dart';
 import 'package:neoflex_quest/core/database/database_service.dart';
+import '../../../tutorial/presentation/screens/tutorial_screen.dart';
 import 'auth_screen.dart';
 
 class RegistrationScreen extends StatefulWidget {
@@ -46,29 +47,29 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
     });
 
     try {
-      //todo раскомментить
-      // final success = await _authService.register(
-      //   username: _usernameController.text.trim(),
-      //   email: _emailController.text.trim(),
-      //   password: _passwordController.text,
-      //   confirmPassword: _confirmPasswordController.text,
-      // );
+      final user = await _authService.register(
+        username: _usernameController.text.trim(),
+        email: _emailController.text.trim(),
+        password: _passwordController.text,
+        confirmPassword: _confirmPasswordController.text,
+      );
 
-      //todo поменять true на success
-      if (true) {
-        Navigator.pushReplacement(
-          context,
-          //todo поменять на переброс на обучение
-          MaterialPageRoute(builder: (context) => MainMenuScreen(userId: 1)),
-        );
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(
-              'Регистрация успешна! Рекомендация: пройдите обучение.',
-            ),
-          ),
-        );
-      }
+      // Показываем сообщение об успешной регистрации
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Регистрация успешна! Рекомендация: пройдите обучение.'),
+        ),
+      );
+      // Показываем экран обучения перед переходом на главный экран
+      await Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (context) => TutorialScreen(isFirstTime: true),
+        ),
+      );
+
+      // После завершения обучения переходим на главный экран
+      Navigator.pushReplacementNamed(context, '/main', arguments: user.id);
     } on Exception catch (e) {
       setState(() {
         _errorMessage = e.toString().replaceAll('Exception: ', '');

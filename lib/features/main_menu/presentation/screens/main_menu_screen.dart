@@ -31,9 +31,13 @@ class _MainMenuScreenState extends State<MainMenuScreen> {
 
   Future<User?> _loadUser() async {
     final authService = AuthService(databaseService: DatabaseService());
-    //todo раскомментить и удалить тестового пользователя
-    // return await authService.getUserById(widget.userId);
-    return User(id: 1, username: "test", email: "test", points: 50);
+    return await authService.getUserById(widget.userId);
+  }
+
+  Future<void> _refreshUser() async {
+    setState(() {
+      _userFuture = _loadUser();
+    });
   }
 
   void _logout() async {
@@ -62,7 +66,13 @@ class _MainMenuScreenState extends State<MainMenuScreen> {
               children: [
                 Text(user.username),
                 SizedBox(width: 8),
-                Image.asset('assets/images/mandarin.png', width: 24),
+                Image.asset(
+                  'assets/images/mandarin.png',
+                  width: 20,
+                  errorBuilder: (context, error, stackTrace) {
+                    return Icon(Icons.attach_money);
+                  },
+                ),
                 Text(' ${user.points}'),
               ],
             ),
@@ -85,7 +95,6 @@ class _MainMenuScreenState extends State<MainMenuScreen> {
           body: IndexedStack(
             index: _currentIndex,
             children: [
-              // Главный экран
               Center(
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
@@ -101,7 +110,10 @@ class _MainMenuScreenState extends State<MainMenuScreen> {
                           () => Navigator.push(
                         context,
                         MaterialPageRoute(
-                          builder: (context) => TimeMachineScreen(userId: user.id),
+                          builder: (context) => TimeMachineScreen(
+                            userId: user.id,
+                            onUpdate: _refreshUser,
+                          ),
                         ),
                       ),
                     ),
@@ -112,16 +124,17 @@ class _MainMenuScreenState extends State<MainMenuScreen> {
                           () => Navigator.push(
                         context,
                         MaterialPageRoute(
-                          builder: (context) => EducationScreen(),
+                          builder: (context) => EducationScreen(
+                            userId: user.id,
+                            onUpdate: _refreshUser,
+                          ),
                         ),
                       ),
                     ),
                   ],
                 ),
               ),
-              // Магазин
-              ShopScreen(userId: user.id),
-              // Достижения
+              ShopScreen(userId: user.id, onUpdate: _refreshUser),
               AchievementsScreen(userId: user.id),
             ],
           ),
@@ -129,18 +142,9 @@ class _MainMenuScreenState extends State<MainMenuScreen> {
             currentIndex: _currentIndex,
             onTap: (index) => setState(() => _currentIndex = index),
             items: [
-              BottomNavigationBarItem(
-                icon: Icon(Icons.home),
-                label: 'Главная',
-              ),
-              BottomNavigationBarItem(
-                icon: Icon(Icons.shop),
-                label: 'Магазин',
-              ),
-              BottomNavigationBarItem(
-                icon: Icon(Icons.star),
-                label: 'Достижения',
-              ),
+              BottomNavigationBarItem(icon: Icon(Icons.home), label: 'Главная'),
+              BottomNavigationBarItem(icon: Icon(Icons.shop), label: 'Магазин'),
+              BottomNavigationBarItem(icon: Icon(Icons.star), label: 'Достижения'),
             ],
           ),
         );
@@ -159,10 +163,7 @@ class _MainMenuScreenState extends State<MainMenuScreen> {
             errorBuilder: (_, __, ___) => Icon(Icons.question_mark, size: 100),
           ),
           SizedBox(height: 10),
-          Text(
-            title,
-            style: TextStyle(fontSize: 18),
-          ),
+          Text(title, style: TextStyle(fontSize: 18)),
         ],
       ),
     );
