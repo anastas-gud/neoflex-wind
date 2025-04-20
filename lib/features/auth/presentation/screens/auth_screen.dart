@@ -6,6 +6,7 @@ import 'package:neoflex_quest/core/database/database_service.dart';
 import 'package:neoflex_quest/features/auth/presentation/screens/registration_screen.dart';
 import 'package:neoflex_quest/shared/widgets/mascot_widget.dart';
 import 'package:neoflex_quest/shared/widgets/secondary_button.dart';
+import 'package:neoflex_quest/shared/widgets/text_field_widget.dart';
 
 import '../../../../core/models/user.dart';
 
@@ -67,35 +68,33 @@ class _AuthScreenState extends State<AuthScreen> {
 
   @override
   Widget build(BuildContext context) {
-    double _boxWidth = min(MediaQuery.of(context).size.width * 0.75, 400);
+    double _boxWidth = min(MediaQuery.of(context).size.width * 0.75, 350);
     return Scaffold(
       body: Center(
-        child: SingleChildScrollView(
-          child: Padding(
-            padding: const EdgeInsets.all(15.0),
-            child: Form(
-              key: _formKey,
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  MascotWidget(
-                    boxWidth: _boxWidth,
-                    mascotSize: _boxWidth * 0.35,
-                    title: "Бип-бип!",
-                    message:
-                        'Для прохождения квеста введите свой логин и пароль...',
-                  ),
-                  SizedBox(height: 30),
-                  ConstrainedBox(
-                    constraints: BoxConstraints(maxWidth: _boxWidth),
-                    child: TextFormField(
+        child: ScrollConfiguration(
+          behavior: ScrollConfiguration.of(context).copyWith(scrollbars: false),
+          child: SingleChildScrollView(
+            child: Padding(
+              padding: const EdgeInsets.all(15.0),
+              child: Form(
+                key: _formKey,
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    MascotWidget(
+                      boxWidth: _boxWidth,
+                      mascotSize: _boxWidth * 0.35,
+                      title: "Бип-бип!",
+                      message:
+                          'Для прохождения квеста введите свой логин и пароль...',
+                    ),
+                    SizedBox(height: 30),
+                    CustomTextFormField(
+                      boxWidth: _boxWidth,
                       controller: _usernameController,
-                      decoration: InputDecoration(
-                        labelText: 'Логин',
-                        prefixIcon: Icon(Icons.person),
-                        border: OutlineInputBorder(),
-                      ),
+                      labelText: 'Логин',
+                      prefixIcon: Icons.person,
                       validator: (value) {
                         if (value == null || value.isEmpty) {
                           return 'Введите логин';
@@ -103,17 +102,12 @@ class _AuthScreenState extends State<AuthScreen> {
                         return null;
                       },
                     ),
-                  ),
-                  SizedBox(height: 15),
-                  ConstrainedBox(
-                    constraints: BoxConstraints(maxWidth: _boxWidth),
-                    child: TextFormField(
+                    SizedBox(height: 15),
+                    CustomTextFormField(
+                      boxWidth: _boxWidth,
                       controller: _passwordController,
-                      decoration: InputDecoration(
-                        labelText: 'Пароль',
-                        prefixIcon: Icon(Icons.lock),
-                        border: OutlineInputBorder(),
-                      ),
+                      labelText: 'Пароль',
+                      prefixIcon: Icons.lock,
                       obscureText: true,
                       validator: (value) {
                         if (value == null || value.isEmpty) {
@@ -125,41 +119,41 @@ class _AuthScreenState extends State<AuthScreen> {
                         return null;
                       },
                     ),
-                  ),
-                  SizedBox(height: 30),
-                  if (_errorMessage != null)
-                    Padding(
-                      padding: const EdgeInsets.only(bottom: 15),
-                      child: Text(
-                        _errorMessage!,
-                        style: TextStyle(color: Colors.red),
-                      ),
-                    ),
-                  SecondaryButtonWidget(
-                    boxWidth: _boxWidth,
-                    text: "Войти",
-                    onPressed: _isLoading ? null : _login,
-                    child:
-                        _isLoading
-                            ? CircularProgressIndicator(color: Colors.white)
-                            : null,
-                  ),
-                  SizedBox(height: 30),
-                  Text("Еще нет аккаунта?"),
-                  SizedBox(height: 30),
-                  SecondaryButtonWidget(
-                    boxWidth: _boxWidth,
-                    text: "Создать аккаунт",
-                    onPressed: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) => RegistrationScreen(),
+                    SizedBox(height: 30),
+                    if (_errorMessage != null)
+                      Padding(
+                        padding: const EdgeInsets.only(bottom: 15),
+                        child: Text(
+                          _errorMessage!,
+                          style: TextStyle(color: Colors.red),
                         ),
-                      );
-                    },
-                  ),
-                ],
+                      ),
+                    SecondaryButtonWidget(
+                      boxWidth: _boxWidth,
+                      text: "Войти",
+                      onPressed: _isLoading ? null : _login,
+                      child:
+                          _isLoading
+                              ? CircularProgressIndicator(color: Colors.white)
+                              : null,
+                    ),
+                    SizedBox(height: 30),
+                    Text("Еще нет аккаунта?"),
+                    SizedBox(height: 30),
+                    SecondaryButtonWidget(
+                      boxWidth: _boxWidth,
+                      text: "Создать аккаунт",
+                      onPressed: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => RegistrationScreen(),
+                          ),
+                        );
+                      },
+                    ),
+                  ],
+                ),
               ),
             ),
           ),

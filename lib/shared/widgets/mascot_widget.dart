@@ -10,8 +10,8 @@ class MascotWidget extends StatelessWidget {
   const MascotWidget({
     this.title = '',
     required this.message,
-    this.mascotSize = 100,
-    this.boxWidth = 300,
+    this.mascotSize = 150,
+    this.boxWidth = 350,
     Key? key,
   }) : super(key: key);
 
