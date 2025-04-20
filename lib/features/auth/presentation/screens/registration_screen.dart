@@ -58,8 +58,8 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
       if (true) {
         Navigator.pushReplacement(
           context,
-          //todo поменять на переброс на обучение
-          MaterialPageRoute(builder: (context) => MainMenuScreen(userId: 1)),
+          //todo поменять на переброс на обучение или вернуть айдишник
+          MaterialPageRoute(builder: (context) => MainMenuScreen()),
         );
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
