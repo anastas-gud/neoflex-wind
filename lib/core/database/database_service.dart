@@ -46,6 +46,7 @@ class DatabaseService {
 
   Future<void> initDatabase() async {
     final connection = await getConnection();
+    await connection.query('DISCARD ALL');
     try {
       await connection.transaction((ctx) async {
         await ctx.execute('''
@@ -145,6 +146,15 @@ class DatabaseService {
             PRIMARY KEY (user_id, item_id)
           )
         ''');
+
+        await ctx.execute('''
+          CREATE TABLE IF NOT EXISTS public.test_attempts (
+            user_id INTEGER REFERENCES users(id),
+            era VARCHAR(50) NOT NULL,
+            attempts_used INTEGER DEFAULT 0,
+            last_attempt TIMESTAMP,
+            PRIMARY KEY (user_id, era)
+        )''');
       });
 
       await _seedInitialData(connection);
