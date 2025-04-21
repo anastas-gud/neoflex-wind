@@ -1,19 +1,23 @@
 import 'package:flutter/material.dart';
+import 'package:neoflex_quest/core/database/database_service.dart';
+import 'package:neoflex_quest/core/models/user.dart';
 import 'package:neoflex_quest/features/time_machine/presentation/screens/quiz_screen.dart';
-
 import '../../../../shared/widgets/mascot_widget.dart';
 
 class TimeMachineScreen extends StatelessWidget {
   final int userId;
+  final VoidCallback onUpdate;
 
-  const TimeMachineScreen({required this.userId, Key? key}) : super(key: key);
+  const TimeMachineScreen({
+    required this.userId,
+    required this.onUpdate,
+    Key? key,
+  }) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: Text('Машина времени'),
-      ),
+      appBar: AppBar(title: Text('Машина времени')),
       body: SingleChildScrollView(
         child: Column(
           children: [
@@ -87,13 +91,7 @@ class TimeMachineScreen extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(
-                title,
-                style: TextStyle(
-                  fontSize: 18,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
+              Text(title, style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
               SizedBox(height: 8),
               Text(description),
               SizedBox(height: 8),
@@ -111,15 +109,44 @@ class TimeMachineScreen extends StatelessWidget {
     );
   }
 
-  void _navigateToQuiz(BuildContext context, String era) {
-    Navigator.push(
-      context,
-      MaterialPageRoute(
-        builder: (context) => QuizScreen(
-          userId: userId,
-          era: era,
+  Future<User> _getUserById(int userId) async {
+    final connection = await DatabaseService().getConnection();
+    try {
+      final result = await connection.query(
+        'SELECT id, username, email, points FROM users WHERE id = @userId',
+        substitutionValues: {'userId': userId},
+      );
+      if (result.isEmpty) throw Exception('Пользователь не найден');
+      final row = result.first;
+      return User(
+        id: row[0] as int,
+        username: row[1] as String,
+        email: row[2] as String,
+        points: row[3] as int,
+      );
+    } finally {
+      await connection.close();
+    }
+  }
+
+  void _navigateToQuiz(BuildContext context, String era) async {
+    try {
+      final user = await _getUserById(userId);
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (context) => QuizScreen(
+            userId: userId,
+            era: era,
+            user: user,
+            onUpdate: onUpdate,
+          ),
         ),
-      ),
-    );
+      );
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Ошибка загрузки данных пользователя: ${e.toString()}')),
+      );
+    }
   }
 }

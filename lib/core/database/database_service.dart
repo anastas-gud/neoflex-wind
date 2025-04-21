@@ -198,4 +198,165 @@ class DatabaseService {
       ''');
     }
   }
+  Future<void> initializeTimeMachineQuestions() async {
+    final connection = await getConnection();
+    try {
+      // Сначала удаляем ответы пользователей, связанные с вопросами
+      await connection.execute('DELETE FROM user_answers');
+      // Удаляем существующие вопросы (опционально)
+      await connection.execute('DELETE FROM time_machine_questions');
+
+      // Вопросы для "Рождение кода" (2005-2016)
+      await _addQuestionsForEraIfNotExist(connection, 'Рождение кода', [
+        {
+          'question': 'В каком году был основан Neoflex?',
+          'correct': '2005',
+          'options': ['2005', '2004', '2006'],
+          'points': 3
+        },
+        {
+          'question': 'Какой статус получила компания Neoflex на второй год после основания?',
+          'correct': 'IBM Advanced Business Partner',
+          'options': ['Microsoft Gold Partner', 'IBM Advanced Business Partner', 'Oracle Platinum Partner'],
+          'points': 3
+        },
+        {
+          'question': 'В каком году был открыт филиал в Саратове?',
+          'correct': '2011',
+          'options': ['2010', '2011', '2012'],
+          'points': 3
+        },
+        {
+          'question': 'Neoflex DataGram – уникальный программный акселератор. На каких технологиях он был построен специалистами Neoflex?',
+          'correct': 'Big Data',
+          'options': ['Blockchain', 'Quantum Computing', 'Big Data'],
+          'points': 3
+        },
+        {
+          'question': 'С какой организацией был выполнен проект по интеграции ИТ-систем ООО «банк Раунд» для реализации процессов выпуска и обслуживания банковских карт абонентов оператора связи в 2016 году?',
+          'correct': 'ПАО «МегаФон»',
+          'options': ['ПАО «МТС»', 'ПАО «МегаФон»', 'ПАО «Билайн»'],
+          'points': 3
+        },
+      ]);
+
+      // Вопросы для "Эпоха прорыва" (2017-2019)
+      await _addQuestionsForEraIfNotExist(connection, 'Эпоха прорыва', [
+        {
+          'question': 'Сколько заказчиков работает с компанией Neoflex в период 2017 года?',
+          'correct': '80',
+          'options': ['80', '50', '120'],
+          'points': 3
+        },
+        {
+          'question': 'Что нового предлагает Neoflex в рамках направления UX и дизайна?',
+          'correct': 'Проекты полного цикла – от проектирования до внедрения цифровых продуктов.',
+          'options': [
+            'Только разработку интерфейсов без внедрения.',
+            'Проекты полного цикла – от проектирования до внедрения цифровых продуктов.',
+            'Обучение сотрудников заказчика основам графического дизайна.'
+          ],
+          'points': 3
+        },
+        {
+          'question': 'В 2018 году было создано облачное решение, предназначенное для разработки бизнес-приложений на основе микросервисной архитектуры. Какое название оно имело?',
+          'correct': 'Neoflex MSA Platform',
+          'options': ['Neoflex MicroHub', 'Neoflex MSA Platform', 'Neoflex CloudCore'],
+          'points': 3
+        },
+        {
+          'question': 'В каком городе в ЮАР был открыт офис?',
+          'correct': 'Йоханнесбург',
+          'options': ['Йоханнесбург', 'Кейптаун', 'Дурбан'],
+          'points': 3
+        },
+        {
+          'question': 'Как назывался проект для кросс-медиа аналитики?',
+          'correct': 'Mediascope',
+          'options': ['MediaTrack', 'Mediascope', 'CrossAnalytics'],
+          'points': 3
+        },
+      ]);
+
+      // Вопросы для "Цифровая революция" (2020-2023)
+      await _addQuestionsForEraIfNotExist(connection, 'Цифровая революция', [
+        {
+          'question': 'Для чего предназначено решение Active Archive от Neoflex?',
+          'correct': 'Для хранения и быстрого доступа к архивным данным с автоматизацией отчетности для госорганов',
+          'options': [
+            'Для хранения и быстрого доступа к архивным данным с автоматизацией отчетности для госорганов',
+            'Для создания новых социальных сетей на основе Big Data',
+            'Для разработки игровых приложений с использованием архивных данных'
+          ],
+          'points': 3
+        },
+        {
+          'question': 'Какой язык программирования НЕ использовался на тот момент в центре?',
+          'correct': 'Dart',
+          'options': ['Swift', 'Dart', 'Objective-C'],
+          'points': 3
+        },
+        {
+          'question': 'Какая платформа была создана компанией Neoflex для организаций, использующих в своих бизнес-процессах большое количество ML-моделей?',
+          'correct': 'MLOps Center',
+          'options': ['MLOps Center', 'AI Factory', 'Deep Learning Hub'],
+          'points': 3
+        },
+        {
+          'question': 'Какой продукт был выпущен в 2022 году для оценки эффективности и безопасности облачной инфраструктуры?',
+          'correct': 'NeoCAT (Cloud Security Platform)',
+          'options': ['NeoCloud Inspector', 'CloudGuard Analytics', 'NeoCAT (Cloud Security Platform)'],
+          'points': 15
+        },
+        {
+          'question': 'В каких отраслях Neoflex реализовал инновационные проекты в 2023 году?',
+          'correct': 'Финансы, ритейл, страхование, промышленность, инвестиции и девелопмент',
+          'options': [
+            'Только в финансах и страховании',
+            'Финансы, ритейл, страхование, промышленность, инвестиции и девелопмент',
+            'Исключительно в сфере IT-стартапов'
+          ],
+          'points': 3
+        },
+      ]);
+    } finally {
+      await connection.close();
+    }
+  }
+
+  Future<void> _addQuestionsForEraIfNotExist(
+    PostgreSQLConnection connection,
+    String era,
+    List<Map<String, dynamic>> questions) async {
+    for (final question in questions) {
+      // Проверяем, существует ли уже такой вопрос
+      final existing = await connection.query(
+        'SELECT 1 FROM time_machine_questions WHERE era = @era AND question_text = @question LIMIT 1',
+        substitutionValues: {
+          'era': era,
+          'question': question['question'],
+        },
+      );
+
+      if (existing.isEmpty) {
+        await connection.query(
+          '''
+        INSERT INTO time_machine_questions 
+          (era, question_text, correct_answer, option1, option2, option3, points)
+        VALUES 
+          (@era, @question, @correct, @option1, @option2, @option3, @points)
+        ''',
+          substitutionValues: {
+            'era': era,
+            'question': question['question'],
+            'correct': question['correct'],
+            'option1': question['options'][0],
+            'option2': question['options'][1],
+            'option3': question['options'][2],
+            'points': question['points'],
+          },
+        );
+      }
+    }
+  }
 }

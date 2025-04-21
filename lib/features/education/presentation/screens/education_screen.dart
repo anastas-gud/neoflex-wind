@@ -4,6 +4,15 @@ import 'package:neoflex_quest/shared/widgets/mascot_widget.dart';
 import 'education_game_screen.dart';
 
 class EducationScreen extends StatelessWidget {
+  final int userId;
+  final VoidCallback onUpdate;
+
+  const EducationScreen({
+    required this.userId,
+    required this.onUpdate,
+    Key? key,
+  }) : super(key: key);
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -55,7 +64,10 @@ class EducationScreen extends StatelessWidget {
                         Navigator.push(
                           context,
                           MaterialPageRoute(
-                            builder: (context) => EducationGameScreen(),
+                            builder: (context) => EducationGameScreen(
+                              userId: userId,
+                              onUpdate: onUpdate,
+                            ),
                           ),
                         );
                       },

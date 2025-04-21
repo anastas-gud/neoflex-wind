@@ -1,9 +1,18 @@
 import 'package:flutter/material.dart';
 import 'package:neoflex_quest/core/models/education_item.dart';
-import 'package:neoflex_quest/core/database//database_service.dart';
+import 'package:neoflex_quest/core/database/database_service.dart';
 import 'package:neoflex_quest/shared/widgets/mascot_widget.dart';
 
 class EducationGameScreen extends StatefulWidget {
+  final int userId;
+  final VoidCallback onUpdate;
+
+  const EducationGameScreen({
+    required this.userId,
+    required this.onUpdate,
+    Key? key,
+  }) : super(key: key);
+
   @override
   _EducationGameScreenState createState() => _EducationGameScreenState();
 }
@@ -25,10 +34,7 @@ class _EducationGameScreenState extends State<EducationGameScreen> {
   Future<List<EducationItem>> _loadItems() async {
     final connection = await DatabaseService().getConnection();
     try {
-      final results = await connection.query(
-          'SELECT * FROM education_items'
-      );
-
+      final results = await connection.query('SELECT * FROM education_items');
       return results.map((row) => EducationItem(
         id: row[0] as int,
         title: row[1] as String,
@@ -42,6 +48,58 @@ class _EducationGameScreenState extends State<EducationGameScreen> {
     }
   }
 
+  Future<void> _saveUserAnswers() async {
+    final connection = await DatabaseService().getConnection();
+    try {
+      // Сохраняем ответы пользователя
+      for (var item in _topContainer) {
+        await connection.query(
+          'INSERT INTO education_answers (user_id, item_id, selected_category, is_correct) '
+              'VALUES (@userId, @itemId, @category, @isCorrect) '
+              'ON CONFLICT (user_id, item_id) DO UPDATE '
+              'SET selected_category = @category, is_correct = @isCorrect',
+          substitutionValues: {
+            'userId': widget.userId,
+            'itemId': item.id,
+            'category': 'children',
+            'isCorrect': item.correctCategory == 'children',
+          },
+        );
+      }
+
+      for (var item in _bottomContainer) {
+        await connection.query(
+          'INSERT INTO education_answers (user_id, item_id, selected_category, is_correct) '
+              'VALUES (@userId, @itemId, @category, @isCorrect) '
+              'ON CONFLICT (user_id, item_id) DO UPDATE '
+              'SET selected_category = @category, is_correct = @isCorrect',
+          substitutionValues: {
+            'userId': widget.userId,
+            'itemId': item.id,
+            'category': 'adults',
+            'isCorrect': item.correctCategory == 'adults',
+          },
+        );
+      }
+
+      // Обновляем баланс пользователя
+      final correctAnswers = _topContainer.where((item) => item.correctCategory == 'children').length +
+          _bottomContainer.where((item) => item.correctCategory == 'adults').length;
+
+      final pointsEarned = correctAnswers * 10;
+
+      await connection.query(
+        'UPDATE users SET points = points + @points WHERE id = @userId',
+        substitutionValues: {
+          'points': pointsEarned,
+          'userId': widget.userId,
+        },
+      );
+    } finally {
+      await connection.close();
+    }
+  }
+
   void _onItemSelected(EducationItem item) {
     setState(() {
       _selectedItem = item;
@@ -50,12 +108,10 @@ class _EducationGameScreenState extends State<EducationGameScreen> {
 
   void _onItemDropped(EducationItem item, String targetCategory) {
     setState(() {
-      // Удаляем из предыдущего места
       _leftItems.remove(item);
       _topContainer.remove(item);
       _bottomContainer.remove(item);
 
-      // Добавляем в новый контейнер
       if (targetCategory == 'children') {
         _topContainer.add(item);
       } else {
@@ -76,29 +132,16 @@ class _EducationGameScreenState extends State<EducationGameScreen> {
   }
 
   Future<void> _checkAnswers() async {
-    setState(() {
-      _isChecking = true;
-    });
+    setState(() => _isChecking = true);
 
-    // В реальном приложении здесь будет сохранение результатов в базу данных
-    await Future.delayed(Duration(seconds: 1));
+    await _saveUserAnswers();
+    widget.onUpdate(); // Вызываем callback для обновления главного экрана
 
-    int correct = 0;
-    int total = _topContainer.length + _bottomContainer.length;
+    setState(() => _isChecking = false);
 
-    // Проверяем верхний контейнер (дети)
-    for (var item in _topContainer) {
-      if (item.correctCategory == 'children') correct++;
-    }
-
-    // Проверяем нижний контейнер (взрослые)
-    for (var item in _bottomContainer) {
-      if (item.correctCategory == 'adults') correct++;
-    }
-
-    setState(() {
-      _isChecking = false;
-    });
+    final correct = _topContainer.where((item) => item.correctCategory == 'children').length +
+        _bottomContainer.where((item) => item.correctCategory == 'adults').length;
+    final total = _topContainer.length + _bottomContainer.length;
 
     showDialog(
       context: context,
@@ -124,23 +167,21 @@ class _EducationGameScreenState extends State<EducationGameScreen> {
         actions: [
           IconButton(
             icon: Icon(Icons.help),
-            onPressed: () {
-              showDialog(
-                context: context,
-                builder: (context) => AlertDialog(
-                  title: Text('Помощь'),
-                  content: Text('Перетащите элементы в соответствующие контейнеры:\n\n'
-                      '🔵 Синий - программы для детей\n'
-                      '🟢 Зеленый - программы для взрослых'),
-                  actions: [
-                    TextButton(
-                      onPressed: () => Navigator.pop(context),
-                      child: Text('Понятно'),
-                    ),
-                  ],
-                ),
-              );
-            },
+            onPressed: () => showDialog(
+              context: context,
+              builder: (context) => AlertDialog(
+                title: Text('Помощь'),
+                content: Text('Перетащите элементы в соответствующие контейнеры:\n\n'
+                    '🔵 Синий - программы для детей\n'
+                    '🟢 Зеленый - программы для взрослых'),
+                actions: [
+                  TextButton(
+                    onPressed: () => Navigator.pop(context),
+                    child: Text('Понятно'),
+                  ),
+                ],
+              ),
+            ),
           ),
         ],
       ),
@@ -164,7 +205,6 @@ class _EducationGameScreenState extends State<EducationGameScreen> {
               Expanded(
                 child: Row(
                   children: [
-                    // Левая панель - элементы для сортировки
                     Expanded(
                       flex: 2,
                       child: Container(
@@ -172,15 +212,10 @@ class _EducationGameScreenState extends State<EducationGameScreen> {
                         color: Colors.grey[100],
                         child: ListView.builder(
                           itemCount: _leftItems.length,
-                          itemBuilder: (context, index) {
-                            final item = _leftItems[index];
-                            return _buildDraggableItem(item);
-                          },
+                          itemBuilder: (context, index) => _buildDraggableItem(_leftItems[index]),
                         ),
                       ),
                     ),
-
-                    // Центральная панель - описание
                     Expanded(
                       flex: 3,
                       child: Container(
@@ -215,13 +250,10 @@ class _EducationGameScreenState extends State<EducationGameScreen> {
                         ),
                       ),
                     ),
-
-                    // Правая панель - контейнеры
                     Expanded(
                       flex: 2,
                       child: Column(
                         children: [
-                          // Контейнер для детей (синий)
                           Expanded(
                             child: _buildContainer(
                               'children',
@@ -230,10 +262,7 @@ class _EducationGameScreenState extends State<EducationGameScreen> {
                               Icons.child_care,
                             ),
                           ),
-
                           Divider(height: 1),
-
-                          // Контейнер для взрослых (зеленый)
                           Expanded(
                             child: _buildContainer(
                               'adults',
@@ -248,8 +277,6 @@ class _EducationGameScreenState extends State<EducationGameScreen> {
                   ],
                 ),
               ),
-
-              // Кнопка проверки
               Padding(
                 padding: const EdgeInsets.all(16.0),
                 child: SizedBox(

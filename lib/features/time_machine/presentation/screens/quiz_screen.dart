@@ -1,15 +1,19 @@
 import 'package:flutter/material.dart';
 import 'package:neoflex_quest/core/models/question.dart';
-
+import 'package:neoflex_quest/core/models/user.dart';
 import '../../../../core/database/database_service.dart';
 
 class QuizScreen extends StatefulWidget {
   final int userId;
   final String era;
+  final User user;
+  final VoidCallback onUpdate;
 
   const QuizScreen({
     required this.userId,
     required this.era,
+    required this.user,
+    required this.onUpdate,
     Key? key,
   }) : super(key: key);
 
@@ -19,15 +23,20 @@ class QuizScreen extends StatefulWidget {
 
 class _QuizScreenState extends State<QuizScreen> {
   late Future<List<Question>> _questionsFuture;
+  int _totalQuestions = 0;
   int _currentQuestionIndex = 0;
   String? _selectedAnswer;
   int _score = 0;
+  int _correctAnswers = 0;
   bool _isSubmitting = false;
 
   @override
   void initState() {
     super.initState();
-    _questionsFuture = _loadQuestions();
+    _questionsFuture = _loadQuestions().then((questions) {
+      _totalQuestions = questions.length;
+      return questions;
+    });
   }
 
   Future<List<Question>> _loadQuestions() async {
@@ -66,9 +75,9 @@ class _QuizScreenState extends State<QuizScreen> {
 
     if (isCorrect) {
       _score += currentQuestion.points;
+      _correctAnswers++;
     }
 
-    // Сохраняем ответ в базу данных
     final connection = await DatabaseService().getConnection();
     try {
       await connection.query(
@@ -83,6 +92,11 @@ class _QuizScreenState extends State<QuizScreen> {
           'isCorrect': isCorrect,
         },
       );
+
+      if (_currentQuestionIndex == questions.length - 1) {
+        await _updateUserPoints();
+        widget.onUpdate(); // Вызываем callback для обновления главного экрана
+      }
     } finally {
       await connection.close();
     }
@@ -94,9 +108,23 @@ class _QuizScreenState extends State<QuizScreen> {
         _isSubmitting = false;
       });
     } else {
-      // Тест завершен
       setState(() => _isSubmitting = false);
       _showResults();
+    }
+  }
+
+  Future<void> _updateUserPoints() async {
+    final connection = await DatabaseService().getConnection();
+    try {
+      await connection.query(
+        'UPDATE users SET points = points + @points WHERE id = @userId',
+        substitutionValues: {
+          'points': _score,
+          'userId': widget.userId,
+        },
+      );
+    } finally {
+      await connection.close();
     }
   }
 
@@ -106,10 +134,23 @@ class _QuizScreenState extends State<QuizScreen> {
       barrierDismissible: false,
       builder: (context) => AlertDialog(
         title: Text('Тест завершен!'),
-        content: Text('Вы набрали $_score мандаринок'),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text('Правильных ответов: $_correctAnswers из $_totalQuestions'),
+            SizedBox(height: 8),
+            Text('Начислено мандаринок: $_score'),
+            SizedBox(height: 8),
+            Text('Общий баланс: ${widget.user.points + _score}'),
+          ],
+        ),
         actions: [
           TextButton(
-            onPressed: () => Navigator.popUntil(context, (route) => route.isFirst),
+            onPressed: () {
+              Navigator.of(context).pop();
+              Navigator.of(context).pop();
+            },
             child: Text('Вернуться'),
           ),
         ],
@@ -120,9 +161,7 @@ class _QuizScreenState extends State<QuizScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: Text(widget.era),
-      ),
+      appBar: AppBar(title: Text(widget.era)),
       body: FutureBuilder<List<Question>>(
         future: _questionsFuture,
         builder: (context, snapshot) {
@@ -136,12 +175,6 @@ class _QuizScreenState extends State<QuizScreen> {
 
           final questions = snapshot.data!;
 
-          if (_currentQuestionIndex >= questions.length) {
-            return _buildResultsScreen();
-          }
-
-          final question = questions[_currentQuestionIndex];
-
           return SingleChildScrollView(
             child: Padding(
               padding: const EdgeInsets.all(16.0),
@@ -154,11 +187,11 @@ class _QuizScreenState extends State<QuizScreen> {
                   ),
                   SizedBox(height: 20),
                   Text(
-                    question.questionText,
+                    questions[_currentQuestionIndex].questionText,
                     style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
                   ),
                   SizedBox(height: 20),
-                  ...question.options.map((option) => RadioListTile<String>(
+                  ...questions[_currentQuestionIndex].options.map((option) => RadioListTile<String>(
                     title: Text(option),
                     value: option,
                     groupValue: _selectedAnswer,
@@ -182,30 +215,6 @@ class _QuizScreenState extends State<QuizScreen> {
             ),
           );
         },
-      ),
-    );
-  }
-
-  Widget _buildResultsScreen() {
-    return Center(
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Text(
-            'Тест завершен!',
-            style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
-          ),
-          SizedBox(height: 20),
-          Text(
-            'Вы набрали $_score мандаринок',
-            style: TextStyle(fontSize: 20),
-          ),
-          SizedBox(height: 40),
-          ElevatedButton(
-            onPressed: () => Navigator.pop(context),
-            child: Text('Вернуться'),
-          ),
-        ],
       ),
     );
   }

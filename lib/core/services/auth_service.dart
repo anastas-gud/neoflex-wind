@@ -36,7 +36,7 @@ class AuthService {
   }
 
   // Регистрация нового пользователя
-  Future<bool> register({
+  Future<User> register({
     required String username,
     required String email,
     required String password,
@@ -48,22 +48,52 @@ class AuthService {
 
     final conn = await _databaseService.getConnection();
     try {
-      await conn.execute(
+      // Проверяем уникальность username
+      final usernameCheck = await conn.query(
+        'SELECT 1 FROM users WHERE username = @username LIMIT 1',
+        substitutionValues: {'username': username},
+      );
+
+      if (usernameCheck.isNotEmpty) {
+        throw Exception('Пользователь с таким именем уже существует');
+      }
+
+      // Проверяем уникальность email
+      final emailCheck = await conn.query(
+        'SELECT 1 FROM users WHERE email = @email LIMIT 1',
+        substitutionValues: {'email': email},
+      );
+
+      if (emailCheck.isNotEmpty) {
+        throw Exception('Пользователь с таким email уже существует');
+      }
+
+      // Вставляем нового пользователя и возвращаем его данные
+      final result = await conn.query(
         '''
       INSERT INTO users (username, email, password)
       VALUES (@username, @email, @password)
+      RETURNING id, username, email, points
       ''',
         substitutionValues: {
           'username': username,
           'email': email,
-          'password': password, // Пароль сохраняется в открытом виде!
+          'password': password,
         },
       );
-      return true;
-    } on PostgreSQLException catch (e) {
-      if (e.message!.contains('unique constraint')) {
-        throw Exception('Пользователь с таким именем или email уже существует');
+
+      if (result.isEmpty) {
+        throw Exception('Не удалось создать пользователя');
       }
+
+      final row = result.first;
+      return User(
+        id: row[0] as int,
+        username: row[1] as String,
+        email: row[2] as String,
+        points: row[3] as int,
+      );
+    } on PostgreSQLException catch (e) {
       throw Exception('Ошибка регистрации: ${e.message}');
     } finally {
       await conn.close();

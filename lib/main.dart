@@ -8,8 +8,9 @@ void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
   // Инициализация базы данных
-  // final dbService = DatabaseService();
-  // await dbService.initDatabase();
+  final dbService = DatabaseService();
+  await dbService.initDatabase();
+  await dbService.initializeTimeMachineQuestions();
 
   runApp(
     MaterialApp(

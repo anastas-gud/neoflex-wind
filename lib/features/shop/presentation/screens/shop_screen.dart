@@ -8,8 +8,13 @@ import 'package:neoflex_quest/shared/widgets/small_mascot_widget.dart';
 
 class ShopScreen extends StatefulWidget {
   final int userId;
+  final VoidCallback onUpdate;
 
-  const ShopScreen({required this.userId, Key? key}) : super(key: key);
+  const ShopScreen({
+    required this.userId,
+    required this.onUpdate,
+    Key? key,
+  }) : super(key: key);
 
   @override
   _ShopScreenState createState() => _ShopScreenState();
@@ -113,9 +118,10 @@ class _ShopScreenState extends State<ShopScreen> {
       final success = await shopService.purchaseItem(widget.userId, item.id);
 
       if (success) {
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(SnackBar(content: Text('Покупка совершена!')));
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Покупка совершена!')),
+        );
+        widget.onUpdate(); // Вызываем callback для обновления главного экрана
         setState(() {
           _itemsFuture = _loadItems(); // Обновляем список товаров
         });
