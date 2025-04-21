@@ -1,9 +1,10 @@
+import 'dart:math';
+
 import 'package:flutter/material.dart';
 import 'package:neoflex_quest/core/models/shop_item.dart';
 import 'package:neoflex_quest/core/services/shop_service.dart';
-
-import '../../../../core/database/database_service.dart';
-import '../../../../shared/widgets/mascot_widget.dart';
+import 'package:neoflex_quest/core/database/database_service.dart';
+import 'package:neoflex_quest/shared/widgets/small_mascot_widget.dart';
 
 class ShopScreen extends StatefulWidget {
   final int userId;
@@ -35,6 +36,26 @@ class _ShopScreenState extends State<ShopScreen> {
     return await shopService.getShopItems();
   }
 
+  void _handleMandarinTap() {
+    final now = DateTime.now();
+    if (_lastTapTime == null ||
+        now.difference(_lastTapTime!) > Duration(seconds: 1)) {
+      _tapCount = 0;
+    }
+
+    _tapCount++;
+    _lastTapTime = now;
+
+    if (_tapCount >= 5) {
+      _tapCount = 0;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Секретное достижение разблокировано! +10 мандаринок'),
+        ),
+      );
+    }
+  }
+
   Future<void> _buyItem(ShopItem item) async {
     final shopService = ShopService(databaseService: DatabaseService());
     try {
@@ -50,9 +71,9 @@ class _ShopScreenState extends State<ShopScreen> {
         });
       }
     } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Ошибка: ${e.toString()}')),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text('Ошибка: ${e.toString()}')));
     }
   }
 
@@ -72,45 +93,63 @@ class _ShopScreenState extends State<ShopScreen> {
 
           final items = snapshot.data!;
 
-          return Column(
-            children: [
-              MascotWidget(
-                message: 'Инициализация торгового протокола…\n\n'
-                    'Внимание, юнит! Здесь циркулируют Мандаринки – валюта умных и быстрых. '
-                    'Обменивай, трать, получай артефакты.\n\n'
-                    'Рекомендация: действуйте без задержек!',
-              ),
-              Divider(),
-              Expanded(
-                child: ListView.builder(
-                  itemCount: items.length,
-                  itemBuilder: (context, index) {
-                    final item = items[index];
-                    return Card(
-                      child: ListTile(
-                        leading: Image.asset(
-                          item.imagePath,
-                          width: 50,
-                          errorBuilder: (_, __, ___) => Icon(Icons.shopping_bag),
+          double _boxWidth = min(MediaQuery.of(context).size.width * 0.9, 450);
+          return ScrollConfiguration(
+            behavior: ScrollConfiguration.of(
+              context,
+            ).copyWith(scrollbars: false),
+            child: SingleChildScrollView(
+              child: Column(
+                children: [
+                  SizedBox(height: 15),
+                  Text(
+                    "Торговая точка",
+                    style: TextStyle(fontSize: 25, fontWeight: FontWeight.bold),
+                  ),
+                  SmallMascotWidget(
+                    boxWidth: _boxWidth,
+                    message:
+                        'Инициализация торгового протокола…\n'
+                        'Внимание, юнит! Здесь циркулируют Мандаринки – валюта умных и быстрых. '
+                        'Обменивай, трать, получай артефакты.\n'
+                        'Рекомендация: действуйте без задержек!',
+                  ),
+                  SizedBox(height: 15),
+                  Divider(),
+                  ListView.builder(
+                    shrinkWrap: true,
+                    physics: NeverScrollableScrollPhysics(),
+                    padding: EdgeInsets.all(15),
+                    itemCount: items.length,
+                    itemBuilder: (context, index) {
+                      final item = items[index];
+                      return Card(
+                        child: ListTile(
+                          leading: Image.asset(
+                            item.imagePath,
+                            width: 50,
+                            errorBuilder:
+                                (_, __, ___) => Icon(Icons.shopping_bag),
+                          ),
+                          title: Text(item.name),
+                          subtitle: Text(item.description),
+                          trailing: Column(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Text('${item.price} мандаринок'),
+                              ElevatedButton(
+                                onPressed: () => _buyItem(item),
+                                child: Text('Купить'),
+                              ),
+                            ],
+                          ),
                         ),
-                        title: Text(item.name),
-                        subtitle: Text(item.description),
-                        trailing: Column(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            Text('${item.price} мандаринок'),
-                            ElevatedButton(
-                              onPressed: () => _buyItem(item),
-                              child: Text('Купить'),
-                            ),
-                          ],
-                        ),
-                      ),
-                    );
-                  },
-                ),
+                      );
+                    },
+                  ),
+                ],
               ),
-            ],
+            ),
           );
         },
       ),

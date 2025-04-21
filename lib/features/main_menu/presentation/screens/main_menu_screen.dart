@@ -1,14 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:neoflex_quest/core/models/user.dart';
 import 'package:neoflex_quest/core/services/auth_service.dart';
-
-import '../../../../core/database/database_service.dart';
-import '../../../../shared/widgets/mascot_widget.dart';
-import '../../../achievements/presentation/screens/achievements_screen.dart';
-import '../../../education/presentation/screens/education_screen.dart';
-import '../../../shop/presentation/screens/shop_screen.dart';
-import '../../../time_machine/presentation/screens/time_machine_screen.dart';
-import '../../../tutorial/presentation/screens/tutorial_screen.dart';
+import 'package:neoflex_quest/core/database/database_service.dart';
+import 'package:neoflex_quest/shared/widgets/mascot_widget.dart';
+import 'package:neoflex_quest/features/achievements/presentation/screens/achievements_screen.dart';
+import 'package:neoflex_quest/features/education/presentation/screens/education_screen.dart';
+import 'package:neoflex_quest/features/shop/presentation/screens/shop_screen.dart';
+import 'package:neoflex_quest/features/time_machine/presentation/screens/time_machine_screen.dart';
+import 'package:neoflex_quest/features/tutorial/presentation/screens/tutorial_screen.dart';
 
 class MainMenuScreen extends StatefulWidget {
   final int userId;
@@ -57,38 +56,60 @@ class _MainMenuScreenState extends State<MainMenuScreen> {
 
         final user = snapshot.data;
         if (user == null) {
-          return Scaffold(body: Center(child: Text('Ошибка загрузки пользователя')));
+          return Scaffold(
+            body: Center(child: Text('Ошибка загрузки пользователя')),
+          );
         }
 
         return Scaffold(
           appBar: AppBar(
-            title: Row(
-              children: [
-                Text(user.username),
-                SizedBox(width: 8),
-                Image.asset(
-                  'assets/images/mandarin.png',
-                  width: 20,
-                  errorBuilder: (context, error, stackTrace) {
-                    return Icon(Icons.attach_money);
-                  },
-                ),
-                Text(' ${user.points}'),
-              ],
+            automaticallyImplyLeading: false,
+            toolbarHeight: 90,
+            backgroundColor: Colors.orangeAccent[100],
+            title: Padding(
+              padding: EdgeInsets.all(10),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(user.username, style: TextStyle(fontSize: 25)),
+                  SizedBox(height: 5),
+                  Row(
+                    children: [
+                      Image.asset('assets/images/tangerine.png', width: 40),
+                      Text(' ${user.points}', style: TextStyle(fontSize: 23)),
+                    ],
+                  ),
+                ],
+              ),
             ),
             actions: [
-              IconButton(
-                icon: Icon(Icons.help),
-                onPressed: () => Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) => TutorialScreen(isFirstTime: false),
+              Align(
+                alignment: Alignment.topCenter,
+                child: Padding(
+                  padding: EdgeInsets.only(right: 0),
+                  child: IconButton(
+                    icon: Icon(Icons.help, size: 32),
+                    onPressed:
+                        () => Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder:
+                                (context) => TutorialScreen(isFirstTime: false),
+                          ),
+                        ),
                   ),
                 ),
               ),
-              IconButton(
-                icon: Icon(Icons.exit_to_app),
-                onPressed: _logout,
+              Align(
+                alignment: Alignment.topCenter,
+                child: Padding(
+                  padding: EdgeInsets.only(right: 10),
+                  child: IconButton(
+                    icon: Icon(Icons.exit_to_app, size: 32),
+                    onPressed: _logout,
+                  ),
+                ),
               ),
             ],
           ),
@@ -99,15 +120,18 @@ class _MainMenuScreenState extends State<MainMenuScreen> {
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    MascotWidget(
-                      message: 'Приветствую, ${user.username}!\n'
-                          'Выбери один из игровых блоков для продолжения.',
+                    Text(
+                      "NEOQUESTOPIA",
+                      style: TextStyle(
+                        fontSize: 40,
+                        fontWeight: FontWeight.bold,
+                      ),
                     ),
-                    SizedBox(height: 40),
+                    SizedBox(height: 30),
                     _buildGameButton(
                       'Машина времени',
                       'assets/images/time_machine.png',
-                          () => Navigator.push(
+                      () => Navigator.push(
                         context,
                         MaterialPageRoute(
                           builder: (context) => TimeMachineScreen(
@@ -117,11 +141,11 @@ class _MainMenuScreenState extends State<MainMenuScreen> {
                         ),
                       ),
                     ),
-                    SizedBox(height: 40),
+                    SizedBox(height: 60),
                     _buildGameButton(
                       'Образовательные миссии',
                       'assets/images/education.png',
-                          () => Navigator.push(
+                      () => Navigator.push(
                         context,
                         MaterialPageRoute(
                           builder: (context) => EducationScreen(
@@ -144,7 +168,10 @@ class _MainMenuScreenState extends State<MainMenuScreen> {
             items: [
               BottomNavigationBarItem(icon: Icon(Icons.home), label: 'Главная'),
               BottomNavigationBarItem(icon: Icon(Icons.shop), label: 'Магазин'),
-              BottomNavigationBarItem(icon: Icon(Icons.star), label: 'Достижения'),
+              BottomNavigationBarItem(
+                icon: Icon(Icons.star),
+                label: 'Достижения',
+              ),
             ],
           ),
         );
@@ -163,7 +190,7 @@ class _MainMenuScreenState extends State<MainMenuScreen> {
             errorBuilder: (_, __, ___) => Icon(Icons.question_mark, size: 100),
           ),
           SizedBox(height: 10),
-          Text(title, style: TextStyle(fontSize: 18)),
+          Text(title, style: TextStyle(fontSize: 20)),
         ],
       ),
     );

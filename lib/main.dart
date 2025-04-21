@@ -22,7 +22,8 @@ void main() async {
       home: AuthScreen(),
       routes: {
         '/main': (context) => MainMenuScreen(
-          userId: ModalRoute.of(context)!.settings.arguments as int,
+          //todo вернуть
+          // userId: ModalRoute.of(context)!.settings.arguments as int,
         ),
       },
       debugShowCheckedModeBanner: false,
