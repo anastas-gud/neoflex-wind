@@ -23,7 +23,7 @@ void main() async {
       routes: {
         '/main': (context) => MainMenuScreen(
           //todo вернуть
-          // userId: ModalRoute.of(context)!.settings.arguments as int,
+          userId: ModalRoute.of(context)!.settings.arguments as int,
         ),
       },
       debugShowCheckedModeBanner: false,
