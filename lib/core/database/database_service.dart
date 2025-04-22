@@ -30,7 +30,7 @@ class DatabaseService {
       username: _username,
       password: _password,
       timeoutInSeconds: 60,
-      encoding: utf8,
+      encoding: Encoding.getByName('utf-8'),
       useSSL: false,
     );
 

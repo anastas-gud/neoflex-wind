@@ -42,33 +42,37 @@ class AuthService {
     required String password,
     required String confirmPassword,
   }) async {
+    // Проверка паролей
     if (password != confirmPassword) {
       throw Exception('Пароли не совпадают');
     }
 
+    // Валидация ввода
+    if (!RegExp(r'^[\w@.+-]+$').hasMatch(username)) {
+      throw Exception('Имя пользователя содержит недопустимые символы');
+    }
+
     final conn = await _databaseService.getConnection();
     try {
-      // Проверяем уникальность username
-      final usernameCheck = await conn.query(
-        'SELECT 1 FROM users WHERE username = @username LIMIT 1',
-        substitutionValues: {'username': username},
-      );
+      // Устанавливаем кодировку соединения
+      await conn.execute("SET CLIENT_ENCODING TO 'UTF8'");
 
-      if (usernameCheck.isNotEmpty) {
-        throw Exception('Пользователь с таким именем уже существует');
-      }
+      // Проверка уникальности
+      final checks = await Future.wait([
+        conn.query(
+          'SELECT 1 FROM users WHERE username = @username LIMIT 1',
+          substitutionValues: {'username': username},
+        ),
+        conn.query(
+          'SELECT 1 FROM users WHERE email = @email LIMIT 1',
+          substitutionValues: {'email': email},
+        ),
+      ]);
 
-      // Проверяем уникальность email
-      final emailCheck = await conn.query(
-        'SELECT 1 FROM users WHERE email = @email LIMIT 1',
-        substitutionValues: {'email': email},
-      );
+      if (checks[0].isNotEmpty) throw Exception('Пользователь с таким именем уже существует');
+      if (checks[1].isNotEmpty) throw Exception('Пользователь с таким email уже существует');
 
-      if (emailCheck.isNotEmpty) {
-        throw Exception('Пользователь с таким email уже существует');
-      }
-
-      // Вставляем нового пользователя и возвращаем его данные
+      // Создание пользователя
       final result = await conn.query(
         '''
       INSERT INTO users (username, email, password)
@@ -82,16 +86,13 @@ class AuthService {
         },
       );
 
-      if (result.isEmpty) {
-        throw Exception('Не удалось создать пользователя');
-      }
+      if (result.isEmpty) throw Exception('Не удалось создать пользователя');
 
-      final row = result.first;
       return User(
-        id: row[0] as int,
-        username: row[1] as String,
-        email: row[2] as String,
-        points: row[3] as int,
+        id: result[0][0] as int,
+        username: result[0][1] as String,
+        email: result[0][2] as String,
+        points: result[0][3] as int,
       );
     } on PostgreSQLException catch (e) {
       throw Exception('Ошибка регистрации: ${e.message}');

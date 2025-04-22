@@ -21,10 +21,10 @@ void main() async {
       ),
       home: AuthScreen(),
       routes: {
-        '/main': (context) => MainMenuScreen(
-          //todo вернуть
-          // userId: ModalRoute.of(context)!.settings.arguments as int,
-        ),
+        '/main':
+            (context) => MainMenuScreen(
+              userId: ModalRoute.of(context)!.settings.arguments as int,
+            ),
       },
       debugShowCheckedModeBanner: false,
     ),

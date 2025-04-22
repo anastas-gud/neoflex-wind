@@ -32,64 +32,8 @@ class _ShopScreenState extends State<ShopScreen> {
   }
 
   Future<List<ShopItem>> _loadItems() async {
-    // todo расскоментить, убрать тестовые
-    // final shopService = ShopService(databaseService: DatabaseService());
-    // return await shopService.getShopItems();
-    final List<List<dynamic>> results = [
-      [
-        1,
-        'Оригинальный худи NeoFlex',
-        'Мягкий худи с логотипом квеста',
-        1500,
-        10,
-        'assets/shop_items/hoodie.png',
-      ],
-      [
-        2,
-        'Эксклюзивный брелок',
-        'Металлический брелок в форме мандаринки',
-        500,
-        null, // Нет данных о количестве
-        'assets/shop_items/keychain.png',
-      ],
-      [
-        3,
-        'Коллекционная кружка',
-        'Керамическая кружка с дизайном машины времени',
-        800,
-        5,
-        'assets/shop_items/mug.png',
-      ],
-      [
-        4,
-        'Набор стикеров',
-        '8 виниловых стикеров с персонажами квеста',
-        300,
-        20,
-        'assets/shop_items/stickers.png',
-      ],
-      [
-        5,
-        'Ограниченная футболка',
-        'Хлопковая футболка с принтом образовательных миссий',
-        1200,
-        3,
-        'assets/shop_items/tshirt.png',
-      ],
-    ];
-
-    return results
-        .map(
-          (row) => ShopItem(
-            id: row[0] as int,
-            name: row[1] as String,
-            description: row[2] as String,
-            price: row[3] as int,
-            stock: row[4] as int?,
-            imagePath: row[5] as String,
-          ),
-        )
-        .toList();
+    final shopService = ShopService(databaseService: DatabaseService());
+    return await shopService.getShopItems();
   }
 
   void _handleMandarinTap() {

@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:neoflex_quest/core/models/user.dart';
 import 'package:neoflex_quest/core/services/auth_service.dart';
 import 'package:neoflex_quest/core/database/database_service.dart';
-import 'package:neoflex_quest/shared/widgets/mascot_widget.dart';
 import 'package:neoflex_quest/features/achievements/presentation/screens/achievements_screen.dart';
 import 'package:neoflex_quest/features/education/presentation/screens/education_screen.dart';
 import 'package:neoflex_quest/features/shop/presentation/screens/shop_screen.dart';
@@ -10,10 +9,9 @@ import 'package:neoflex_quest/features/time_machine/presentation/screens/time_ma
 import 'package:neoflex_quest/features/tutorial/presentation/screens/tutorial_screen.dart';
 
 class MainMenuScreen extends StatefulWidget {
-  // todo вернуть
-  // final int userId;
-  // const MainMenuScreen({required this.userId, Key? key}) : super(key: key);
-  const MainMenuScreen({Key? key}) : super(key: key);
+  final int userId;
+
+  const MainMenuScreen({required this.userId, Key? key}) : super(key: key);
 
   @override
   _MainMenuScreenState createState() => _MainMenuScreenState();
@@ -30,10 +28,6 @@ class _MainMenuScreenState extends State<MainMenuScreen> {
   }
 
   Future<User?> _loadUser() async {
-    //todo раскомментить и удалить тестового пользователя
-    // final authService = AuthService(databaseService: DatabaseService());
-    // return await authService.getUserById(widget.userId);
-    return User(id: 1, username: "Test5", email: "test", points: 50);
     final authService = AuthService(databaseService: DatabaseService());
     return await authService.getUserById(widget.userId);
   }
@@ -52,8 +46,6 @@ class _MainMenuScreenState extends State<MainMenuScreen> {
 
   @override
   Widget build(BuildContext context) {
-    //todo убрать
-    final _userFuture = _loadUser();
     return FutureBuilder<User?>(
       future: _userFuture,
       builder: (context, snapshot) {
@@ -83,25 +75,16 @@ class _MainMenuScreenState extends State<MainMenuScreen> {
                   SizedBox(height: 5),
                   Row(
                     children: [
-                      Image.asset('assets/images/tangerine.png', width: 40),
+                      Image.asset(
+                        'assets/images/tangerine.png',
+                        width: 40,
+                        errorBuilder: (_, __, ___) => Icon(Icons.attach_money),
+                      ),
                       Text(' ${user.points}', style: TextStyle(fontSize: 23)),
                     ],
                   ),
                 ],
               ),
-            title: Row(
-              children: [
-                Text(user.username),
-                SizedBox(width: 8),
-                Image.asset(
-                  'assets/images/mandarin.png',
-                  width: 20,
-                  errorBuilder: (context, error, stackTrace) {
-                    return Icon(Icons.attach_money);
-                  },
-                ),
-                Text(' ${user.points}'),
-              ],
             ),
             actions: [
               Align(
@@ -155,11 +138,10 @@ class _MainMenuScreenState extends State<MainMenuScreen> {
                         context,
                         MaterialPageRoute(
                           builder:
-                              (context) => TimeMachineScreen(userId: user.id),
-                          builder: (context) => TimeMachineScreen(
-                            userId: user.id,
-                            onUpdate: _refreshUser,
-                          ),
+                              (context) => TimeMachineScreen(
+                                userId: user.id,
+                                onUpdate: _refreshUser,
+                              ),
                         ),
                       ),
                     ),
@@ -170,10 +152,11 @@ class _MainMenuScreenState extends State<MainMenuScreen> {
                       () => Navigator.push(
                         context,
                         MaterialPageRoute(
-                          builder: (context) => EducationScreen(
-                            userId: user.id,
-                            onUpdate: _refreshUser,
-                          ),
+                          builder:
+                              (context) => EducationScreen(
+                                userId: user.id,
+                                onUpdate: _refreshUser,
+                              ),
                         ),
                       ),
                     ),
@@ -194,7 +177,10 @@ class _MainMenuScreenState extends State<MainMenuScreen> {
                 icon: Icon(Icons.star),
                 label: 'Достижения',
               ),
-              BottomNavigationBarItem(icon: Icon(Icons.star), label: 'Достижения'),
+              BottomNavigationBarItem(
+                icon: Icon(Icons.star),
+                label: 'Достижения',
+              ),
             ],
           ),
         );

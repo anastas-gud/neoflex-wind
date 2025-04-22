@@ -42,16 +42,12 @@ class _AuthScreenState extends State<AuthScreen> {
     });
 
     try {
-      //todo раскомментить и удалить тестового пользователя
       final user = await _authService.authenticate(
         _usernameController.text.trim(),
         _passwordController.text,
       );
-      // final user = User(id: 1, username: "test", email: "test", points: 50);
       if (user != null) {
-        //todo вернуть
-        // Navigator.pushNamed(context, '/main', arguments: user.id);
-        Navigator.pushNamed(context, '/main');
+        Navigator.pushNamed(context, '/main', arguments: user.id);
       } else {
         setState(() {
           _errorMessage = 'Неверный логин или пароль';
