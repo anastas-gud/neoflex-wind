@@ -49,7 +49,7 @@ class _MainMenuScreenState extends State<MainMenuScreen> {
     return FutureBuilder<User?>(
       future: _userFuture,
       builder: (context, snapshot) {
-        if (snapshot.connectionState != ConnectionState.done) {
+        if (snapshot.connectionState == ConnectionState.waiting) {
           return Scaffold(body: Center(child: CircularProgressIndicator()));
         }
 
@@ -177,10 +177,6 @@ class _MainMenuScreenState extends State<MainMenuScreen> {
                 icon: Icon(Icons.star),
                 label: 'Достижения',
               ),
-              BottomNavigationBarItem(
-                icon: Icon(Icons.star),
-                label: 'Достижения',
-              ),
             ],
           ),
         );
@@ -200,7 +196,6 @@ class _MainMenuScreenState extends State<MainMenuScreen> {
           ),
           SizedBox(height: 10),
           Text(title, style: TextStyle(fontSize: 20)),
-          Text(title, style: TextStyle(fontSize: 18)),
         ],
       ),
     );

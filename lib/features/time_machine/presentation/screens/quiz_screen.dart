@@ -64,6 +64,25 @@ class _QuizScreenState extends State<QuizScreen> {
     }
   }
 
+  Future<void> _incrementAttempt() async {
+    final connection = await DatabaseService().getConnection();
+    try {
+      await connection.query('''
+        INSERT INTO public.test_attempts (user_id, era, attempts_used, last_attempt)
+        VALUES (@userId, @era, 1, CURRENT_TIMESTAMP)
+        ON CONFLICT (user_id, era) 
+        DO UPDATE SET 
+          attempts_used = LEAST(test_attempts.attempts_used + 1, 3),
+          last_attempt = CURRENT_TIMESTAMP
+      ''', substitutionValues: {
+        'userId': widget.userId,
+        'era': widget.era,
+      });
+    } finally {
+      await connection.close();
+    }
+  }
+
   void _submitAnswer() async {
     if (_selectedAnswer == null) return;
 
@@ -94,6 +113,7 @@ class _QuizScreenState extends State<QuizScreen> {
       );
 
       if (_currentQuestionIndex == questions.length - 1) {
+        await _incrementAttempt(); // Увеличиваем счетчик попыток только после завершения теста
         await _updateUserPoints();
         widget.onUpdate(); // Вызываем callback для обновления главного экрана
       }

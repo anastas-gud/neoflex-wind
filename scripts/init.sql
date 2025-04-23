@@ -91,3 +91,23 @@ CREATE TABLE education_answers (
     answered_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     PRIMARY KEY (user_id, item_id)
 );
+
+-- Таблица для хранения попыток прохождения тестов
+CREATE TABLE test_attempts (
+    user_id INTEGER REFERENCES users(id),
+    era VARCHAR(50) NOT NULL,  -- 'Рождение кода', 'Эпоха прорыва', 'Цифровая революция'
+    attempts_used INTEGER DEFAULT 0,
+    last_attempt TIMESTAMP,
+    PRIMARY KEY (user_id, era)
+);
+
+-- Таблица для хранения попыток прохождения образовательных миссий
+CREATE TABLE education_attempts (
+    user_id INTEGER REFERENCES users(id) PRIMARY KEY,
+    attempts_used INTEGER DEFAULT 0,
+    last_attempt TIMESTAMP,
+    max_attempts INTEGER DEFAULT 3
+);
+
+GRANT ALL PRIVILEGES ON ALL TABLES IN SCHEMA public TO postgres;
+GRANT ALL PRIVILEGES ON ALL SEQUENCES IN SCHEMA public TO postgres;

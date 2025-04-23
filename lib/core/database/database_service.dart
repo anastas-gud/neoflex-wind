@@ -46,6 +46,7 @@ class DatabaseService {
 
   Future<void> initDatabase() async {
     final connection = await getConnection();
+    await connection.query('DISCARD ALL');
     try {
       await connection.transaction((ctx) async {
         await ctx.execute('''
@@ -145,6 +146,23 @@ class DatabaseService {
             PRIMARY KEY (user_id, item_id)
           )
         ''');
+
+        await ctx.execute('''
+          CREATE TABLE IF NOT EXISTS public.test_attempts (
+            user_id INTEGER REFERENCES users(id),
+            era VARCHAR(50) NOT NULL,
+            attempts_used INTEGER DEFAULT 0,
+            last_attempt TIMESTAMP,
+            PRIMARY KEY (user_id, era)
+        )''');
+
+        await ctx.execute('''
+          CREATE TABLE IF NOT EXISTS education_attempts (
+          user_id INTEGER REFERENCES users(id) PRIMARY KEY,
+          attempts_used INTEGER DEFAULT 0,
+          last_attempt TIMESTAMP,
+          max_attempts INTEGER DEFAULT 3
+        )''');
       });
 
       await _seedInitialData(connection);
@@ -155,7 +173,8 @@ class DatabaseService {
 
   Future<void> _seedInitialData(PostgreSQLConnection connection) async {
     // Проверяем и добавляем достижения
-    final achievements = await connection.query('SELECT 1 FROM achievements LIMIT 1');
+    final achievements = await connection.query(
+        'SELECT 1 FROM achievements LIMIT 1');
     if (achievements.isEmpty) {
       await connection.query('''
         INSERT INTO achievements (name, description, points_reward, is_secret, icon_path) VALUES
@@ -168,7 +187,8 @@ class DatabaseService {
     }
 
     // Проверяем и добавляем товары
-    final shopItems = await connection.query('SELECT 1 FROM shop_items LIMIT 1');
+    final shopItems = await connection.query(
+        'SELECT 1 FROM shop_items LIMIT 1');
     if (shopItems.isEmpty) {
       await connection.query('''
         INSERT INTO shop_items (name, description, price, stock, image_path) VALUES
@@ -184,20 +204,29 @@ class DatabaseService {
           ('Худи', 'Фирменное худи', 1000, 2, 'assets/shop/hoodie.png')
       ''');
     }
-
+    // todo раскомментить делиты, если поменялись вопросы
+    // await connection.execute('DELETE FROM education_answers WHERE item_id IN (SELECT id FROM education_items);');
+    // await connection.execute('DELETE FROM education_items');
     // Проверяем и добавляем образовательные элементы
-    final educationItems = await connection.query('SELECT 1 FROM education_items LIMIT 1');
+    final educationItems = await connection.query(
+        'SELECT 1 FROM education_items LIMIT 1');
     if (educationItems.isEmpty) {
       await connection.query('''
-        INSERT INTO education_items (title, short_description, full_description, correct_category, points) VALUES
-          ('NEOCHARITY', 'Обучение детей Scratch и Python', 'Образовательный проект "NEOCHARITY". Программа обучения включает такие направления, как программирование с помощью языков Scratch и Python, создание web-сайтов, графический дизайн.', 'children', 10),
-          ('Созвездие 24', 'Встреча с талантливыми детьми', 'Мероприятие "Созвездие 24". Встреча с талантливыми детьми из лагеря «Созвездие», на которой были подняты темы о мире фронтенд-разработки, а также проведена игра, посвященная Искусственному Интеллекту.', 'children', 10),
-          ('Разработка 3D-игр', 'Курс по созданию трёхмерных игр', 'Курс по созданию трёхмерных игр с использованием популярных движков и языков программирования.', 'children', 10),
-          ('Neoskills lab', 'Переквалификация ИТ-специалистов', 'Проект по переквалификации ИТ-специалистов, желающих развиваться в новых для себя сферах.', 'adults', 10),
-          ('Java - разработка', 'Курс по Java и Spring Framework', 'Курс, включающий в себя основы языка, Spring Framework, работу с БД, тестирование, микросервисы, Docker и Camunda BPM.', 'adults', 10)
+      INSERT INTO education_items (title, short_description, full_description, correct_category, points) VALUES
+        ('NEOCHARITY', 'Обучение детей Scratch и Python', 'Образовательный проект "NEOCHARITY". Программа обучения включает такие направления, как программирование с помощью языков Scratch и Python, создание web-сайтов, графический дизайн.', 'children', 2),
+        ('Созвездие 24', 'Встреча с талантливыми детьми', 'Мероприятие "Созвездие 24". Встреча с талантливыми детьми из лагеря «Созвездие», на которой были подняты темы о мире фронтенд-разработки, а также проведена игра, посвященная Искусственному Интеллекту.', 'children', 2),
+        ('Разработка 3D-игр', 'Курс по созданию трёхмерных игр', 'Курс по созданию трёхмерных игр с использованием популярных движков и языков программирования.', 'children', 2),
+        ('Компьютерная графика', 'Изучение компьютерной графики', 'Направление в онлайн-школе по изучению компьютерной графики с помощью специализированного ПО.', 'children', 2),
+        ('Разработка Android-приложений', 'Создание мобильных приложений', 'Курс по созданию мобильных приложений для Android на Java/Kotlin с использованием Android Studio.', 'children', 2),
+        ('Neoskills lab', 'Переквалификация ИТ-специалистов', 'Проект по переквалификации ИТ-специалистов, желающих развиваться в новых для себя сферах.', 'adults', 2),
+        ('Java - разработка', 'Курс по Java и Spring Framework', 'Курс, включающий в себя основы языка, Spring Framework, работу с БД, тестирование, микросервисы, Docker и Camunda BPM.', 'adults', 2),
+        ('Мастеркласс "Мозг vs Генеративный ИИ"', 'Доклад о мышлении и ИИ', 'Доклад об отличиях процесса мышления человека и вычислительных подходов генеративных моделей.', 'adults', 2),
+        ('Frontend - разработка', 'Курс по веб-разработке', 'Курс про HTML/CSS, JavaScript/TypeScript, React, архитектуру, стилизацию, безопасность и основы бэкенда.', 'adults', 2),
+        ('Мастеркласс "Создание геймифицированного квеста"', 'Доклад об игровых анимациях', 'Доклад об интеграции анимаций в игровой процесс, методах создания интерактивных элементов.', 'adults', 2)
       ''');
     }
   }
+
   Future<void> initializeTimeMachineQuestions() async {
     final connection = await getConnection();
     try {
