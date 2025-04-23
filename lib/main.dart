@@ -7,10 +7,10 @@ import 'features/main_menu/presentation/screens/main_menu_screen.dart';
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
-  // Инициализация базы данных
-  final dbService = DatabaseService();
-  await dbService.initDatabase();
-  await dbService.initializeTimeMachineQuestions();
+  // // Инициализация базы данных
+  // final dbService = DatabaseService();
+  // await dbService.initDatabase();
+  // await dbService.initializeTimeMachineQuestions();
 
   runApp(
     MaterialApp(

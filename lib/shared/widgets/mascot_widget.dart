@@ -61,9 +61,8 @@ class MascotWidget extends StatelessWidget {
                 'assets/svg/neonchik.svg',
                 width: mascotSize,
                 height: mascotSize,
-                placeholderBuilder: (context) => CircularProgressIndicator(),
-                errorBuilder:
-                    (_, __, ___) => Icon(Icons.android, size: mascotSize),
+                placeholderBuilder:
+                    (context) => Icon(Icons.android, size: mascotSize),
               ),
             ],
           ),

@@ -1,15 +1,11 @@
 import 'dart:math';
-
 import 'package:flutter/material.dart';
 import 'package:neoflex_quest/core/constants/strings.dart';
 import 'package:neoflex_quest/core/services/auth_service.dart';
-import 'package:neoflex_quest/features/main_menu/presentation/screens/main_menu_screen.dart';
 import 'package:neoflex_quest/shared/widgets/mascot_widget.dart';
 import 'package:neoflex_quest/shared/widgets/secondary_button.dart';
 import 'package:neoflex_quest/shared/widgets/text_field_widget.dart';
-import 'package:neoflex_quest/core/database/database_service.dart';
-import '../../../tutorial/presentation/screens/tutorial_screen.dart';
-import 'auth_screen.dart';
+import 'package:neoflex_quest/features/tutorial/presentation/screens/tutorial_screen.dart';
 
 class RegistrationScreen extends StatefulWidget {
   @override
@@ -25,9 +21,7 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
   bool _isLoading = false;
   String? _errorMessage;
 
-  final AuthService _authService = AuthService(
-    databaseService: DatabaseService(),
-  );
+  final AuthService _authService = AuthService();
 
   @override
   void dispose() {
@@ -57,7 +51,9 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
       // Показываем сообщение об успешной регистрации
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text('Регистрация успешна! Рекомендация: пройдите обучение.'),
+          content: Text(
+            'Регистрация успешна! Рекомендация: пройдите обучение.',
+          ),
         ),
       );
       // Показываем экран обучения перед переходом на главный экран
@@ -69,7 +65,7 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
       );
 
       // После завершения обучения переходим на главный экран
-      Navigator.pushReplacementNamed(context, '/main', arguments: user.id);
+      Navigator.pushReplacementNamed(context, '/main', arguments: user?.id);
     } on Exception catch (e) {
       setState(() {
         _errorMessage = e.toString().replaceAll('Exception: ', '');

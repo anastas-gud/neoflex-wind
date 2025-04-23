@@ -1,146 +1,63 @@
+import 'package:http/http.dart' as http;
+import 'package:neoflex_quest/core/constants/strings.dart';
+import 'dart:convert';
 import 'package:neoflex_quest/core/models/user.dart';
-import 'package:neoflex_quest/core/database/database_service.dart';
-import 'package:postgres/postgres.dart';
 
 class AuthService {
-  final DatabaseService _databaseService;
-
-  AuthService({required DatabaseService databaseService})
-      : _databaseService = databaseService;
-
-  // Аутентификация пользователя
+  // Вход в систему
   Future<User?> authenticate(String username, String password) async {
-    final conn = await _databaseService.getConnection();
-    try {
-      final results = await conn.query(
-        'SELECT id, username, email, points FROM users WHERE username = @username AND password = @password',
-        substitutionValues: {
-          'username': username,
-          'password': password,
-        },
-      );
-
-      if (results.isNotEmpty) {
-        final row = results[0];
-        return User(
-          id: row[0] is int ? row[0] as int : int.parse(row[0].toString()),
-          username: row[1] as String,
-          email: row[2]?.toString() ?? '',
-          points: row[3] is int ? row[3] as int : int.parse(row[3].toString()),
-        );
-      }
-      return null;
-    } finally {
-      await conn.close();
+    final response = await http.post(
+      Uri.parse('${AppStrings.baseUrl}/users/login'),
+      headers: {'Content-Type': 'application/json'},
+      body: jsonEncode({'username': username, 'password': password}),
+    );
+    if (response.statusCode == 200) {
+      return User.fromJson(jsonDecode(response.body));
     }
+    return null;
   }
 
   // Регистрация нового пользователя
-  Future<User> register({
+  Future<User?> register({
     required String username,
     required String email,
     required String password,
     required String confirmPassword,
   }) async {
-    // Проверка паролей
     if (password != confirmPassword) {
       throw Exception('Пароли не совпадают');
     }
-
-    // Валидация ввода
     if (!RegExp(r'^[\w@.+-]+$').hasMatch(username)) {
       throw Exception('Имя пользователя содержит недопустимые символы');
     }
-
-    final conn = await _databaseService.getConnection();
-    try {
-      // Устанавливаем кодировку соединения
-      await conn.execute("SET CLIENT_ENCODING TO 'UTF8'");
-
-      // Проверка уникальности
-      final checks = await Future.wait([
-        conn.query(
-          'SELECT 1 FROM users WHERE username = @username LIMIT 1',
-          substitutionValues: {'username': username},
-        ),
-        conn.query(
-          'SELECT 1 FROM users WHERE email = @email LIMIT 1',
-          substitutionValues: {'email': email},
-        ),
-      ]);
-
-      if (checks[0].isNotEmpty) throw Exception('Пользователь с таким именем уже существует');
-      if (checks[1].isNotEmpty) throw Exception('Пользователь с таким email уже существует');
-
-      // Создание пользователя
-      final result = await conn.query(
-        '''
-      INSERT INTO users (username, email, password)
-      VALUES (@username, @email, @password)
-      RETURNING id, username, email, points
-      ''',
-        substitutionValues: {
-          'username': username,
-          'email': email,
-          'password': password,
-        },
-      );
-
-      if (result.isEmpty) throw Exception('Не удалось создать пользователя');
-
-      return User(
-        id: result[0][0] as int,
-        username: result[0][1] as String,
-        email: result[0][2] as String,
-        points: result[0][3] as int,
-      );
-    } on PostgreSQLException catch (e) {
-      throw Exception('Ошибка регистрации: ${e.message}');
-    } finally {
-      await conn.close();
+    final response = await http.post(
+      Uri.parse('${AppStrings.baseUrl}/users/register'),
+      headers: {'Content-Type': 'application/json'},
+      body: jsonEncode({
+        'username': username,
+        'email': email,
+        'password': password,
+      }),
+    );
+    if (response.statusCode == 201) {
+      return User.fromJson(jsonDecode(response.body));
     }
+    throw Exception('Юнит с такими данными уже существует');
   }
 
   // Выход из системы
   Future<void> logout() async {
-    // В этом случае просто очищаем состояние, так как нет токенов
     return;
-  }
-
-  // Проверка существования пользователя
-  Future<bool> userExists(String username) async {
-    final conn = await _databaseService.getConnection();
-    try {
-      final results = await conn.query(
-        'SELECT 1 FROM users WHERE username = @username',
-        substitutionValues: {'username': username},
-      );
-      return results.isNotEmpty;
-    } finally {
-      await conn.close();
-    }
   }
 
   // Получение пользователя по ID
   Future<User?> getUserById(int userId) async {
-    final conn = await _databaseService.getConnection();
-    try {
-      final results = await conn.query(
-        'SELECT id, username, email, points FROM users WHERE id = @userId',
-        substitutionValues: {'userId': userId},
-      );
-
-      if (results.isNotEmpty) {
-        return User(
-          id: results[0][0] as int,
-          username: results[0][1] as String,
-          email: results[0][2] as String,
-          points: results[0][3] as int,
-        );
-      }
-      return null;
-    } finally {
-      await conn.close();
+    final response = await http.get(
+      Uri.parse('${AppStrings.baseUrl}/users/$userId'),
+    );
+    if (response.statusCode == 200) {
+      return User.fromJson(jsonDecode(response.body));
     }
+    return null;
   }
 }

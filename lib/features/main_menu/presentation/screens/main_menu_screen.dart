@@ -28,7 +28,7 @@ class _MainMenuScreenState extends State<MainMenuScreen> {
   }
 
   Future<User?> _loadUser() async {
-    final authService = AuthService(databaseService: DatabaseService());
+    final authService = AuthService();
     return await authService.getUserById(widget.userId);
   }
 
@@ -39,7 +39,7 @@ class _MainMenuScreenState extends State<MainMenuScreen> {
   }
 
   void _logout() async {
-    final authService = AuthService(databaseService: DatabaseService());
+    final authService = AuthService();
     await authService.logout();
     Navigator.pushReplacementNamed(context, '/');
   }
