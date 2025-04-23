@@ -1,5 +1,7 @@
 import 'package:neoflex_quest/core/models/shop_item.dart';
-import 'package:neoflex_quest/core/database/database_service.dart';
+import 'package:neoflex_quest/core/services/data_service.dart';
+
+import '../database/database_service.dart';
 
 class ShopService {
   final DatabaseService _databaseService;

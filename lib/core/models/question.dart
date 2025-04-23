@@ -3,7 +3,9 @@ class Question {
   final String era;
   final String questionText;
   final String correctAnswer;
-  final List<String> options;
+  final String option1;
+  final String option2;
+  final String option3;
   final int points;
 
   Question({
@@ -11,7 +13,9 @@ class Question {
     required this.era,
     required this.questionText,
     required this.correctAnswer,
-    required this.options,
+    required this.option1,
+    required this.option2,
+    required this.option3,
     required this.points,
   });
 }

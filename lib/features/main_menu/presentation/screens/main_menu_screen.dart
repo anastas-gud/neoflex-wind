@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:neoflex_quest/core/models/user.dart';
 import 'package:neoflex_quest/core/services/auth_service.dart';
-import 'package:neoflex_quest/core/database/database_service.dart';
+import 'package:neoflex_quest/core/services/data_service.dart';
 import 'package:neoflex_quest/features/achievements/presentation/screens/achievements_screen.dart';
 import 'package:neoflex_quest/features/education/presentation/screens/education_screen.dart';
 import 'package:neoflex_quest/features/shop/presentation/screens/shop_screen.dart';

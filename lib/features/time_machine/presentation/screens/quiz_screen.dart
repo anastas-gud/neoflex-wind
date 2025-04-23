@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:neoflex_quest/core/models/question.dart';
 import 'package:neoflex_quest/core/models/user.dart';
 import '../../../../core/database/database_service.dart';
+import '../../../../core/services/data_service.dart';
 
 class QuizScreen extends StatefulWidget {
   final int userId;
@@ -52,11 +53,9 @@ class _QuizScreenState extends State<QuizScreen> {
         era: row[1] as String,
         questionText: row[2] as String,
         correctAnswer: row[3] as String,
-        options: [
-          if (row[4] != null) row[4] as String,
-          if (row[5] != null) row[5] as String,
-          if (row[6] != null) row[6] as String,
-        ],
+        option1: row[4] as String,
+        option2: row[5] as String,
+        option3: row[6] as String,
         points: row[7] as int,
       )).toList();
     } finally {
@@ -70,8 +69,8 @@ class _QuizScreenState extends State<QuizScreen> {
       await connection.query('''
         INSERT INTO public.test_attempts (user_id, era, attempts_used, last_attempt)
         VALUES (@userId, @era, 1, CURRENT_TIMESTAMP)
-        ON CONFLICT (user_id, era) 
-        DO UPDATE SET 
+        ON CONFLICT (user_id, era)
+        DO UPDATE SET
           attempts_used = LEAST(test_attempts.attempts_used + 1, 3),
           last_attempt = CURRENT_TIMESTAMP
       ''', substitutionValues: {
@@ -194,6 +193,7 @@ class _QuizScreenState extends State<QuizScreen> {
           }
 
           final questions = snapshot.data!;
+          final currentQuestion = questions[_currentQuestionIndex];
 
           return SingleChildScrollView(
             child: Padding(
@@ -207,16 +207,28 @@ class _QuizScreenState extends State<QuizScreen> {
                   ),
                   SizedBox(height: 20),
                   Text(
-                    questions[_currentQuestionIndex].questionText,
+                    currentQuestion.questionText,
                     style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
                   ),
                   SizedBox(height: 20),
-                  ...questions[_currentQuestionIndex].options.map((option) => RadioListTile<String>(
-                    title: Text(option),
-                    value: option,
+                  RadioListTile<String>(
+                    title: Text(currentQuestion.option1),
+                    value: currentQuestion.option1,
                     groupValue: _selectedAnswer,
                     onChanged: (value) => setState(() => _selectedAnswer = value),
-                  )),
+                  ),
+                  RadioListTile<String>(
+                    title: Text(currentQuestion.option2),
+                    value: currentQuestion.option2,
+                    groupValue: _selectedAnswer,
+                    onChanged: (value) => setState(() => _selectedAnswer = value),
+                  ),
+                  RadioListTile<String>(
+                    title: Text(currentQuestion.option3),
+                    value: currentQuestion.option3,
+                    groupValue: _selectedAnswer,
+                    onChanged: (value) => setState(() => _selectedAnswer = value),
+                  ),
                   SizedBox(height: 20),
                   Center(
                     child: ElevatedButton(

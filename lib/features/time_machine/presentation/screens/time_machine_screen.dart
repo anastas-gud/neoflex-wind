@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:neoflex_quest/core/database/database_service.dart';
+import 'package:neoflex_quest/core/services/data_service.dart';
 import 'package:neoflex_quest/core/models/user.dart';
 import 'package:neoflex_quest/features/time_machine/presentation/screens/quiz_screen.dart';
+import '../../../../core/database/database_service.dart';
 import '../../../../shared/widgets/mascot_widget.dart';
 
 class TimeMachineScreen extends StatefulWidget {
