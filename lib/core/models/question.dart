@@ -18,4 +18,17 @@ class Question {
     required this.option3,
     required this.points,
   });
+
+  factory Question.fromJson(Map<String, dynamic> json) {
+    return Question(
+      id: json['id'],
+      era: json['era'],
+      questionText: json['questionText'],
+      correctAnswer: json['correctAnswer'],
+      option1: json['option1'],
+      option2: json['option2'],
+      option3: json['option3'],
+      points: json['points'],
+    );
+  }
 }

@@ -7,8 +7,8 @@ import 'features/main_menu/presentation/screens/main_menu_screen.dart';
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
-  final dbService = DataService();
-  final result = await dbService.initializeData();
+  final dataService = DataService();
+  final result = await dataService.initializeData();
 
   runApp(
     MaterialApp(

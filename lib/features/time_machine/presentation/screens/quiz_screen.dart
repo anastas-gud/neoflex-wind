@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:neoflex_quest/core/models/question.dart';
 import 'package:neoflex_quest/core/models/user.dart';
-import '../../../../core/database/database_service.dart';
-import '../../../../core/services/data_service.dart';
+import 'package:neoflex_quest/core/database/database_service.dart';
+import 'package:neoflex_quest/core/services/data_service.dart';
+import 'package:neoflex_quest/core/services/time_machine_service.dart';
 
 class QuizScreen extends StatefulWidget {
   final int userId;
@@ -31,6 +32,8 @@ class _QuizScreenState extends State<QuizScreen> {
   int _correctAnswers = 0;
   bool _isSubmitting = false;
 
+  TimeMachineService _timeMachineService = TimeMachineService();
+
   @override
   void initState() {
     super.initState();
@@ -41,45 +44,14 @@ class _QuizScreenState extends State<QuizScreen> {
   }
 
   Future<List<Question>> _loadQuestions() async {
-    final connection = await DatabaseService().getConnection();
-    try {
-      final results = await connection.query(
-        'SELECT * FROM time_machine_questions WHERE era = @era',
-        substitutionValues: {'era': widget.era},
-      );
-
-      return results.map((row) => Question(
-        id: row[0] as int,
-        era: row[1] as String,
-        questionText: row[2] as String,
-        correctAnswer: row[3] as String,
-        option1: row[4] as String,
-        option2: row[5] as String,
-        option3: row[6] as String,
-        points: row[7] as int,
-      )).toList();
-    } finally {
-      await connection.close();
-    }
+    List<Question> result = await _timeMachineService.findQuestionsByEra(
+      widget.era,
+    );
+    return result;
   }
 
   Future<void> _incrementAttempt() async {
-    final connection = await DatabaseService().getConnection();
-    try {
-      await connection.query('''
-        INSERT INTO public.test_attempts (user_id, era, attempts_used, last_attempt)
-        VALUES (@userId, @era, 1, CURRENT_TIMESTAMP)
-        ON CONFLICT (user_id, era)
-        DO UPDATE SET
-          attempts_used = LEAST(test_attempts.attempts_used + 1, 3),
-          last_attempt = CURRENT_TIMESTAMP
-      ''', substitutionValues: {
-        'userId': widget.userId,
-        'era': widget.era,
-      });
-    } finally {
-      await connection.close();
-    }
+    await _timeMachineService.incrementAttempt(widget.userId, widget.era);
   }
 
   void _submitAnswer() async {
@@ -100,9 +72,9 @@ class _QuizScreenState extends State<QuizScreen> {
     try {
       await connection.query(
         'INSERT INTO user_answers (user_id, question_id, answer, is_correct) '
-            'VALUES (@userId, @questionId, @answer, @isCorrect) '
-            'ON CONFLICT (user_id, question_id) DO UPDATE '
-            'SET answer = @answer, is_correct = @isCorrect',
+        'VALUES (@userId, @questionId, @answer, @isCorrect) '
+        'ON CONFLICT (user_id, question_id) DO UPDATE '
+        'SET answer = @answer, is_correct = @isCorrect',
         substitutionValues: {
           'userId': widget.userId,
           'questionId': currentQuestion.id,
@@ -137,10 +109,7 @@ class _QuizScreenState extends State<QuizScreen> {
     try {
       await connection.query(
         'UPDATE users SET points = points + @points WHERE id = @userId',
-        substitutionValues: {
-          'points': _score,
-          'userId': widget.userId,
-        },
+        substitutionValues: {'points': _score, 'userId': widget.userId},
       );
     } finally {
       await connection.close();
@@ -151,29 +120,32 @@ class _QuizScreenState extends State<QuizScreen> {
     showDialog(
       context: context,
       barrierDismissible: false,
-      builder: (context) => AlertDialog(
-        title: Text('Тест завершен!'),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text('Правильных ответов: $_correctAnswers из $_totalQuestions'),
-            SizedBox(height: 8),
-            Text('Начислено мандаринок: $_score'),
-            SizedBox(height: 8),
-            Text('Общий баланс: ${widget.user.points + _score}'),
-          ],
-        ),
-        actions: [
-          TextButton(
-            onPressed: () {
-              Navigator.of(context).pop();
-              Navigator.of(context).pop();
-            },
-            child: Text('Вернуться'),
+      builder:
+          (context) => AlertDialog(
+            title: Text('Тест завершен!'),
+            content: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'Правильных ответов: $_correctAnswers из $_totalQuestions',
+                ),
+                SizedBox(height: 8),
+                Text('Начислено мандаринок: $_score'),
+                SizedBox(height: 8),
+                Text('Общий баланс: ${widget.user.points + _score}'),
+              ],
+            ),
+            actions: [
+              TextButton(
+                onPressed: () {
+                  Navigator.of(context).pop();
+                  Navigator.of(context).pop();
+                },
+                child: Text('Вернуться'),
+              ),
+            ],
           ),
-        ],
-      ),
     );
   }
 
@@ -215,31 +187,38 @@ class _QuizScreenState extends State<QuizScreen> {
                     title: Text(currentQuestion.option1),
                     value: currentQuestion.option1,
                     groupValue: _selectedAnswer,
-                    onChanged: (value) => setState(() => _selectedAnswer = value),
+                    onChanged:
+                        (value) => setState(() => _selectedAnswer = value),
                   ),
                   RadioListTile<String>(
                     title: Text(currentQuestion.option2),
                     value: currentQuestion.option2,
                     groupValue: _selectedAnswer,
-                    onChanged: (value) => setState(() => _selectedAnswer = value),
+                    onChanged:
+                        (value) => setState(() => _selectedAnswer = value),
                   ),
                   RadioListTile<String>(
                     title: Text(currentQuestion.option3),
                     value: currentQuestion.option3,
                     groupValue: _selectedAnswer,
-                    onChanged: (value) => setState(() => _selectedAnswer = value),
+                    onChanged:
+                        (value) => setState(() => _selectedAnswer = value),
                   ),
                   SizedBox(height: 20),
                   Center(
                     child: ElevatedButton(
-                      onPressed: _selectedAnswer == null || _isSubmitting
-                          ? null
-                          : _submitAnswer,
-                      child: _isSubmitting
-                          ? CircularProgressIndicator(color: Colors.white)
-                          : Text(_currentQuestionIndex == questions.length - 1
-                          ? 'Завершить'
-                          : 'Далее'),
+                      onPressed:
+                          _selectedAnswer == null || _isSubmitting
+                              ? null
+                              : _submitAnswer,
+                      child:
+                          _isSubmitting
+                              ? CircularProgressIndicator(color: Colors.white)
+                              : Text(
+                                _currentQuestionIndex == questions.length - 1
+                                    ? 'Завершить'
+                                    : 'Далее',
+                              ),
                     ),
                   ),
                 ],
