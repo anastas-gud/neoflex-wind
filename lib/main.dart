@@ -15,6 +15,7 @@ void main() async {
       title: 'NeoQuestopia',
       theme: ThemeData(
         primarySwatch: Colors.orange,
+        fontFamily: 'Montserrat',
         visualDensity: VisualDensity.adaptivePlatformDensity,
       ),
       home: result ? AuthScreen() : ErrorScreen(),

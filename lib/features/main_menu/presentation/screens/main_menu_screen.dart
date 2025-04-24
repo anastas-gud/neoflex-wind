@@ -8,6 +8,9 @@ import 'package:neoflex_quest/features/shop/presentation/screens/shop_screen.dar
 import 'package:neoflex_quest/features/time_machine/presentation/screens/time_machine_screen.dart';
 import 'package:neoflex_quest/features/tutorial/presentation/screens/tutorial_screen.dart';
 
+import '../../../../core/constants/colors.dart';
+import '../../../../shared/widgets/game_button_with_animation.dart';
+
 class MainMenuScreen extends StatefulWidget {
   final int userId;
 
@@ -64,7 +67,7 @@ class _MainMenuScreenState extends State<MainMenuScreen> {
           appBar: AppBar(
             automaticallyImplyLeading: false,
             toolbarHeight: 90,
-            backgroundColor: Colors.orangeAccent[100],
+            backgroundColor: AppColors.softLavender,
             title: Padding(
               padding: EdgeInsets.all(10),
               child: Column(
@@ -123,11 +126,17 @@ class _MainMenuScreenState extends State<MainMenuScreen> {
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    Text(
-                      "NEOQUESTOPIA",
-                      style: TextStyle(
-                        fontSize: 40,
-                        fontWeight: FontWeight.bold,
+                    ShaderMask(
+                      blendMode: BlendMode.srcIn,
+                      shaderCallback: (Rect bounds) {
+                        return AppColors.orangeGradient.createShader(bounds);
+                      },
+                      child: Text(
+                        "NEOQUESTOPIA",
+                        style: TextStyle(
+                          fontSize: 40,
+                          fontWeight: FontWeight.bold,
+                        ),
                       ),
                     ),
                     SizedBox(height: 30),
@@ -185,19 +194,10 @@ class _MainMenuScreenState extends State<MainMenuScreen> {
   }
 
   Widget _buildGameButton(String title, String imagePath, VoidCallback onTap) {
-    return InkWell(
+    return GameButtonWithAnimation(
+      title: title,
+      imagePath: imagePath,
       onTap: onTap,
-      child: Column(
-        children: [
-          Image.asset(
-            imagePath,
-            width: 150,
-            errorBuilder: (_, __, ___) => Icon(Icons.question_mark, size: 100),
-          ),
-          SizedBox(height: 10),
-          Text(title, style: TextStyle(fontSize: 20)),
-        ],
-      ),
     );
   }
 }

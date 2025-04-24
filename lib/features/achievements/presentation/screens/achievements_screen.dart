@@ -35,10 +35,7 @@ class _AchievementsScreenState extends State<AchievementsScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: Text('Галактика достижений'),
-        centerTitle: true,
-      ),
+      // Убрали appBar полностью
       body: FutureBuilder(
         future: Future.wait([_achievementsFuture, _userAchievementsFuture]),
         builder: (context, AsyncSnapshot<List<dynamic>> snapshot) {
@@ -53,65 +50,71 @@ class _AchievementsScreenState extends State<AchievementsScreen> {
           final achievements = snapshot.data![0] as List<Achievement>;
           final userAchievements = snapshot.data![1] as List<UserAchievement>;
 
-          return Column(
-            children: [
-              MascotWidget(
-                message: 'Загрузка миссионного модуля...\n\n'
-                    'Юнит, перед тобой карта твоих прошлых и будущих триумфов. '
-                    'Каждое достижение – вызов, который сделает тебя сильнее. '
-                    'Собери все, и возможно, откроешь то, что скрыто в тени…\n\n'
-                    'Готов к новым победам?',
-              ),
-              Expanded(
-                child: ListView.builder(
-                  padding: EdgeInsets.all(16),
-                  itemCount: achievements.length,
-                  itemBuilder: (context, index) {
-                    final achievement = achievements[index];
-                    final isUnlocked = userAchievements
-                        .any((ua) => ua.achievementId == achievement.id);
-
-                    return Card(
-                      color: isUnlocked ? Colors.orange[50] : Colors.grey[200],
-                      margin: EdgeInsets.only(bottom: 16),
-                      child: ListTile(
-                        leading: Image.asset(
-                          achievement.iconPath,
-                          width: 40,
-                          height: 40,
-                          errorBuilder: (_, __, ___) => Icon(Icons.star, size: 40),
-                        ),
-                        title: Text(
-                          achievement.name,
-                          style: TextStyle(
-                            fontWeight: FontWeight.bold,
-                            color: isUnlocked ? Colors.black : Colors.grey,
-                          ),
-                        ),
-                        subtitle: Text(
-                          achievement.description,
-                          style: TextStyle(
-                            color: isUnlocked ? Colors.black87 : Colors.grey,
-                          ),
-                        ),
-                        trailing: isUnlocked
-                            ? Column(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            Icon(Icons.check_circle, color: Colors.green),
-                            Text(
-                              '+${achievement.pointsReward}',
-                              style: TextStyle(color: Colors.green),
-                            ),
-                          ],
-                        )
-                            : Icon(Icons.lock, color: Colors.red),
-                      ),
-                    );
-                  },
+          return SingleChildScrollView(
+            padding: EdgeInsets.only(top: 16), // Добавили отступ сверху
+            child: Column(
+              children: [
+                SizedBox(height: 15),
+                Text(
+                  "Галактика достижений",
+                  style: TextStyle(fontSize: 25, fontWeight: FontWeight.bold),
                 ),
-              ),
-            ],
+                MascotWidget(
+                  message: 'Загрузка миссионного модуля...\n\n'
+                      'Юнит, перед тобой карта твоих прошлых и будущих триумфов. '
+                      'Каждое достижение – вызов, который сделает тебя сильнее. '
+                      'Собери все, и возможно, откроешь то, что скрыто в тени…\n\n'
+                      'Готов к новым победам?',
+                ),
+                Padding(
+                  padding: EdgeInsets.all(16),
+                  child: Column(
+                    children: achievements.map((achievement) {
+                      final isUnlocked = userAchievements
+                          .any((ua) => ua.achievementId == achievement.id);
+
+                      return Card(
+                        color: isUnlocked ? Colors.orange[50] : Colors.grey[200],
+                        margin: EdgeInsets.only(bottom: 16),
+                        child: ListTile(
+                          leading: Image.asset(
+                            achievement.iconPath,
+                            width: 40,
+                            height: 40,
+                            errorBuilder: (_, __, ___) => Icon(Icons.star, size: 40),
+                          ),
+                          title: Text(
+                            achievement.name,
+                            style: TextStyle(
+                              fontWeight: FontWeight.bold,
+                              color: isUnlocked ? Colors.black : Colors.grey,
+                            ),
+                          ),
+                          subtitle: Text(
+                            achievement.description,
+                            style: TextStyle(
+                              color: isUnlocked ? Colors.black87 : Colors.grey,
+                            ),
+                          ),
+                          trailing: isUnlocked
+                              ? Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Icon(Icons.check_circle, color: Colors.green),
+                              Text(
+                                '+${achievement.pointsReward}',
+                                style: TextStyle(color: Colors.green),
+                              ),
+                            ],
+                          )
+                              : Icon(Icons.lock, color: Colors.red),
+                        ),
+                      );
+                    }).toList(),
+                  ),
+                ),
+              ],
+            ),
           );
         },
       ),

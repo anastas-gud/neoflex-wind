@@ -6,6 +6,7 @@ import 'package:neoflex_quest/shared/widgets/mascot_widget.dart';
 import 'package:neoflex_quest/shared/widgets/secondary_button.dart';
 import 'package:neoflex_quest/shared/widgets/text_field_widget.dart';
 import 'package:neoflex_quest/features/tutorial/presentation/screens/tutorial_screen.dart';
+import '../../../../core/constants/colors.dart';
 
 class RegistrationScreen extends StatefulWidget {
   @override
@@ -176,6 +177,8 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
                       ),
                     SecondaryButtonWidget(
                       boxWidth: _boxWidth,
+                      backgroundColor: AppColors.orange,
+                      borderColor: AppColors.orange,
                       text: 'Создать аккаунт',
                       onPressed: _register,
                       child:
@@ -188,6 +191,8 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
                     SizedBox(height: 30),
                     SecondaryButtonWidget(
                       boxWidth: _boxWidth,
+                      backgroundColor: AppColors.white,
+                      borderColor: AppColors.blue,
                       text: 'Вернуться ко входу',
                       onPressed: () => Navigator.pop(context),
                     ),

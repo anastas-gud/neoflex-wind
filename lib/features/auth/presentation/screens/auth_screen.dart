@@ -123,6 +123,8 @@ class _AuthScreenState extends State<AuthScreen> {
                     SecondaryButtonWidget(
                       boxWidth: _boxWidth,
                       text: "Войти",
+                      backgroundColor: AppColors.orange,
+                      borderColor: AppColors.orange,
                       onPressed: _isLoading ? null : _login,
                       child:
                           _isLoading
@@ -134,6 +136,8 @@ class _AuthScreenState extends State<AuthScreen> {
                     SizedBox(height: 30),
                     SecondaryButtonWidget(
                       boxWidth: _boxWidth,
+                      backgroundColor: AppColors.white,
+                      borderColor: AppColors.blue,
                       text: "Создать аккаунт",
                       onPressed: () {
                         Navigator.push(
