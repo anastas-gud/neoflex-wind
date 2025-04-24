@@ -22,11 +22,9 @@ class AppColors {
   static const Color lightPurple = Color(0xFFca84d7);
   static const Color darkPurple = Color(0xFF4a2951);
   static const Color deepPinkPurple = Color.fromRGBO(175, 56, 125, 0.3);
-
   static const Color lightLavender = Color(0xFFE5CFEE);
   static const Color softLavender = Color(0xFFF3DDFC);
   static const Color delicatePink = Color(0xFFFFECFF);
-
   static const Color orange = Color(0xFFFF6B00);
   static const Color softOrange = Color(0xFFFF9437);
   static const Color pink = Color(0xFFFF007A);

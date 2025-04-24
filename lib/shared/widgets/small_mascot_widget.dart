@@ -1,18 +1,17 @@
 import 'package:flutter/material.dart';
+import 'package:neoflex_quest/core/constants/colors.dart';
 
 class SmallMascotWidget extends StatelessWidget {
-  final String title;
   final String message;
   final double mascotSize;
   final double boxWidth;
-  final double overlap;
+  final String? imagePath;
 
   const SmallMascotWidget({
-    this.title = '',
     required this.message,
-    this.mascotSize = 60,
+    this.mascotSize = 90,
     this.boxWidth = 450,
-    this.overlap = 60,
+    this.imagePath,
     Key? key,
   }) : super(key: key);
 
@@ -25,32 +24,24 @@ class SmallMascotWidget extends StatelessWidget {
         children: [
           Container(
             margin: EdgeInsets.only(
-              top: mascotSize / 3,
-              right: mascotSize - overlap,
+              top: 55,
+              right: 5,
             ),
             padding: const EdgeInsets.all(15),
             decoration: BoxDecoration(
-              color: Colors.orange[50],
+              color: AppColors.lightLavender,
               borderRadius: BorderRadius.circular(15),
             ),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               mainAxisSize: MainAxisSize.min,
               children: [
-                if (title.isNotEmpty)
-                  Padding(
-                    padding: const EdgeInsets.only(bottom: 5),
-                    child: Text(
-                      title,
-                      style: const TextStyle(
-                        fontSize: 18,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                  ),
                 Text(
                   message,
-                  style: const TextStyle(fontSize: 15),
+                  style: const TextStyle(
+                    fontSize: 14,
+                    color: AppColors.middlePurple,
+                  ),
                   softWrap: true,
                 ),
               ],
@@ -60,7 +51,7 @@ class SmallMascotWidget extends StatelessWidget {
             right: 0,
             top: 0,
             child: Image.asset(
-              'assets/images/neon1.png',
+              imagePath.toString(),
               width: mascotSize,
               height: mascotSize,
               errorBuilder:
