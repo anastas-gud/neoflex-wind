@@ -3,8 +3,10 @@ import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:neoflex_quest/core/models/shop_item.dart';
 import 'package:neoflex_quest/core/services/shop_service.dart';
-import 'package:neoflex_quest/core/database/database_service.dart';
+import 'package:neoflex_quest/core/services/data_service.dart';
 import 'package:neoflex_quest/shared/widgets/small_mascot_widget.dart';
+
+import '../../../../core/database/database_service.dart';
 
 import '../../../../shared/widgets/mascot_widget.dart';
 

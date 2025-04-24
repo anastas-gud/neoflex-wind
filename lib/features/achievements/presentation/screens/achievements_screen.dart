@@ -2,8 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:neoflex_quest/core/models/achievement.dart';
 import 'package:neoflex_quest/core/models/user_achievement.dart';
 import 'package:neoflex_quest/core/services/achievement_service.dart';
-import 'package:neoflex_quest/core/database/database_service.dart';
+import 'package:neoflex_quest/core/services/data_service.dart';
 import 'package:neoflex_quest/shared/widgets/mascot_widget.dart';
+
+import '../../../../core/database/database_service.dart';
+import '../../../../core/services/data_service.dart';
 
 class AchievementsScreen extends StatefulWidget {
   final int userId;
@@ -32,7 +35,6 @@ class _AchievementsScreenState extends State<AchievementsScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      // Убрали appBar полностью
       body: FutureBuilder(
         future: Future.wait([_achievementsFuture, _userAchievementsFuture]),
         builder: (context, AsyncSnapshot<List<dynamic>> snapshot) {

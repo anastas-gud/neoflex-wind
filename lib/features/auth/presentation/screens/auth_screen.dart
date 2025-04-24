@@ -1,15 +1,11 @@
 import 'dart:math';
-
 import 'package:flutter/material.dart';
 import 'package:neoflex_quest/core/constants/colors.dart';
 import 'package:neoflex_quest/core/services/auth_service.dart';
-import 'package:neoflex_quest/core/database/database_service.dart';
 import 'package:neoflex_quest/features/auth/presentation/screens/registration_screen.dart';
 import 'package:neoflex_quest/shared/widgets/mascot_widget.dart';
 import 'package:neoflex_quest/shared/widgets/secondary_button.dart';
 import 'package:neoflex_quest/shared/widgets/text_field_widget.dart';
-
-import '../../../../core/models/user.dart';
 
 class AuthScreen extends StatefulWidget {
   @override
@@ -23,9 +19,7 @@ class _AuthScreenState extends State<AuthScreen> {
   bool _isLoading = false;
   String? _errorMessage;
 
-  final AuthService _authService = AuthService(
-    databaseService: DatabaseService(),
-  );
+  final AuthService _authService = AuthService();
 
   @override
   void dispose() {
@@ -43,16 +37,12 @@ class _AuthScreenState extends State<AuthScreen> {
     });
 
     try {
-      //todo раскомментить и удалить тестового пользователя
       final user = await _authService.authenticate(
         _usernameController.text.trim(),
         _passwordController.text,
       );
-      // final user = User(id: 1, username: "test", email: "test", points: 50);
       if (user != null) {
-        //todo вернуть
         Navigator.pushNamed(context, '/main', arguments: user.id);
-        // Navigator.pushNamed(context, '/main');
       } else {
         setState(() {
           _errorMessage = 'Неверный логин или пароль';
@@ -60,7 +50,7 @@ class _AuthScreenState extends State<AuthScreen> {
       }
     } catch (e) {
       setState(() {
-        _errorMessage = 'Ошибка входа: ${e.toString()}';
+        _errorMessage = 'Ошибка входа';
       });
     } finally {
       setState(() {

@@ -1,6 +1,8 @@
 import 'package:neoflex_quest/core/models/achievement.dart';
 import 'package:neoflex_quest/core/models/user_achievement.dart';
-import 'package:neoflex_quest/core/database/database_service.dart';
+import 'package:neoflex_quest/core/services/data_service.dart';
+
+import '../database/database_service.dart';
 
 class AchievementService {
   final DatabaseService _databaseService;
@@ -60,9 +62,10 @@ class AchievementService {
       );
 
       return results.map((row) => UserAchievement(
-        userId: row[0] as int,
-        achievementId: row[1] as int,
-        earnedAt: DateTime.parse(row[2] as String),
+        id: row[0] as int,
+        userId: row[1] as int,
+        achievementId: row[2] as int,
+        earnedAt: DateTime.parse(row[3] as String),
       )).toList();
     } finally {
       await conn.close();

@@ -1,8 +1,11 @@
 import 'package:flutter/material.dart';
-import 'package:neoflex_quest/core/database/database_service.dart';
-import 'package:neoflex_quest/core/models/user.dart';
+import 'package:neoflex_quest/core/constants/strings.dart';
+import 'package:neoflex_quest/core/models/test_attempt.dart';
+import 'package:neoflex_quest/core/services/auth_service.dart';
+import 'package:neoflex_quest/core/services/time_machine_service.dart';
 import 'package:neoflex_quest/features/time_machine/presentation/screens/quiz_screen.dart';
-import '../../../../shared/widgets/mascot_widget.dart';
+import 'package:neoflex_quest/features/time_machine/presentation/widgets/era_card.dart';
+import 'package:neoflex_quest/shared/widgets/mascot_widget.dart';
 
 class TimeMachineScreen extends StatefulWidget {
   final int userId;
@@ -25,6 +28,9 @@ class _TimeMachineScreenState extends State<TimeMachineScreen> {
     'Цифровая революция (2020-2023)': 3,
   };
 
+  final TimeMachineService _timeMachineService = TimeMachineService();
+  final AuthService _authService = AuthService();
+
   @override
   void initState() {
     super.initState();
@@ -32,26 +38,17 @@ class _TimeMachineScreenState extends State<TimeMachineScreen> {
   }
 
   Future<void> _loadAttempts() async {
-    final connection = await DatabaseService().getConnection();
-    try {
-      final results = await connection.query(
-        'SELECT era, attempts_used FROM test_attempts WHERE user_id = @userId',
-        substitutionValues: {'userId': widget.userId},
-      );
-
-      setState(() {
-        for (var row in results) {
-          final era = row[0] as String;
-          final used = row[1] as int;
-          final displayEra = _getDisplayEraName(era);
-          if (_attemptsRemaining.containsKey(displayEra)) {
-            _attemptsRemaining[displayEra] = 3 - used;
-          }
+    final List<TestAttempt> usersTestAttempts = await _timeMachineService
+        .findUsersTestAttempts(widget.userId);
+    setState(() {
+      for (TestAttempt attempt in usersTestAttempts) {
+        String displayEra = _getDisplayEraName(attempt.era);
+        int used = attempt.attemptsUsed;
+        if (_attemptsRemaining.containsKey(displayEra)) {
+          _attemptsRemaining[displayEra] = 3 - used;
         }
-      });
-    } finally {
-      await connection.close();
-    }
+      }
+    });
   }
 
   String _getDisplayEraName(String dbEra) {
@@ -70,145 +67,9 @@ class _TimeMachineScreenState extends State<TimeMachineScreen> {
   String _getDbEraName(String displayEra) {
     if (displayEra.startsWith('Рождение кода')) return 'Рождение кода';
     if (displayEra.startsWith('Эпоха прорыва')) return 'Эпоха прорыва';
-    if (displayEra.startsWith('Цифровая революция')) return 'Цифровая революция';
+    if (displayEra.startsWith('Цифровая революция'))
+      return 'Цифровая революция';
     return displayEra;
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(title: Text('Машина времени')),
-      body: SingleChildScrollView(
-        child: Column(
-          children: [
-            MascotWidget(
-              message: 'Инициирую протокол временнОго перемещения... '
-                  'Сканирование архивных данных... '
-                  'Обнаружен доступ к модулю "Хронохранилище Neoflex"...\n\n'
-                  'Приветствую тебя в блоке "Машина времени". '
-                  'Данный сегмент содержит цифровые отпечатки ключевых событий Neoflex. '
-                  'Оптимальный метод интеграции в компанию – изучение ее истории. '
-                  'Поэтому, юнит, приготовься к прыжку сквозь эпохи!\n\n'
-                  'Внимание! Системное предупреждение: Обнаружена ошибка целостности… '
-                  'Для активации полного доступа требуется восстановление недостающей информации…\n\n'
-                  'Кажется, у нас проблемы, вместо четкой хроники перед нами цифровая головоломка '
-                  'с заполнением пропусков. Я выделил 3 временные эпохи, в каждой – принадлежащие '
-                  'ей ключевые события, но некоторые варианты... скажем так, альтернативные. '
-                  'Помоги собрать пазл, чтобы понять, как мы стали теми, кто мы есть.\n\n'
-                  'Рекомендация: для успешного прохождения испытания необходимо выбрать среди '
-                  'предоставленных вариантов правдивые факты, подсказки можно найти в соцсетях компании.\n\n'
-                  'Ограничение: у вас есть 3 попытки на прохождение каждого теста.\n\n'
-                  'Ожидание действий юнита для начала калибровки временных точек…',
-            ),
-            Padding(
-              padding: const EdgeInsets.all(16.0),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    'Доступные эпохи:',
-                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-                  ),
-                  SizedBox(height: 16),
-                  _buildEraCard(
-                    context,
-                    'Рождение кода (2005-2016)',
-                    'Основание компании, первые проекты и партнерства',
-                    _attemptsRemaining['Рождение кода (2005-2016)']!,
-                        () => _navigateToQuiz(context, 'Рождение кода (2005-2016)'),
-                  ),
-                  _buildEraCard(
-                    context,
-                    'Эпоха прорыва (2017-2019)',
-                    'Расширение направлений и международное присутствие',
-                    _attemptsRemaining['Эпоха прорыва (2017-2019)']!,
-                        () => _navigateToQuiz(context, 'Эпоха прорыва (2017-2019)'),
-                  ),
-                  _buildEraCard(
-                    context,
-                    'Цифровая революция (2020-2023)',
-                    'Инновационные решения и цифровая трансформация',
-                    _attemptsRemaining['Цифровая революция (2020-2023)']!,
-                        () => _navigateToQuiz(context, 'Цифровая революция (2020-2023)'),
-                  ),
-                ],
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildEraCard(
-      BuildContext context,
-      String title,
-      String description,
-      int attemptsLeft,
-      VoidCallback onTap,
-      ) {
-    final canAttempt = attemptsLeft > 0;
-
-    return Card(
-      margin: EdgeInsets.only(bottom: 16),
-      child: InkWell(
-        onTap: canAttempt ? onTap : null,
-        child: Padding(
-          padding: const EdgeInsets.all(16.0),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Text(title, style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
-                ],
-              ),
-              SizedBox(height: 8),
-              Text(description),
-              Text(
-                'Попыток: $attemptsLeft/3',
-                style: TextStyle(
-                  color: attemptsLeft > 0 ? Colors.green : Colors.red,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-              SizedBox(height: 8),
-              Align(
-                alignment: Alignment.centerRight,
-                child: ElevatedButton(
-                  onPressed: canAttempt ? onTap : null,
-                  child: Text(canAttempt ? 'Начать' : 'Попытки исчерпаны'),
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: canAttempt ? null : Colors.grey,
-                  ),
-                ),
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-
-  Future<User> _getUserById(int userId) async {
-    final connection = await DatabaseService().getConnection();
-    try {
-      final result = await connection.query(
-        'SELECT id, username, email, points FROM users WHERE id = @userId',
-        substitutionValues: {'userId': userId},
-      );
-      if (result.isEmpty) throw Exception('Пользователь не найден');
-      final row = result.first;
-      return User(
-        id: row[0] as int,
-        username: row[1] as String,
-        email: row[2] as String,
-        points: row[3] as int,
-      );
-    } finally {
-      await connection.close();
-    }
   }
 
   void _navigateToQuiz(BuildContext context, String displayEra) async {
@@ -222,18 +83,86 @@ class _TimeMachineScreenState extends State<TimeMachineScreen> {
       return;
     }
 
-    final user = await _getUserById(widget.userId);
+    final user = await _authService.getUserById(widget.userId);
+    if (user == null) throw Exception('Пользователь не найден');
     Navigator.push(
       context,
       MaterialPageRoute(
-        builder: (context) => QuizScreen(
-          userId: widget.userId,
-          era: dbEra,
-          user: user,
-          onUpdate: () {
-            widget.onUpdate();
-            _loadAttempts(); // Обновляем попытки после завершения теста
-          },
+        builder:
+            (context) => QuizScreen(
+              userId: widget.userId,
+              era: dbEra,
+              user: user,
+              onUpdate: () {
+                widget.onUpdate();
+                _loadAttempts(); // Обновляем попытки после завершения теста
+              },
+            ),
+      ),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(title: Text('Машина времени')),
+      body: SingleChildScrollView(
+        child: Column(
+          children: [
+            MascotWidget(message: AppStrings.timeMachineDescription),
+            Padding(
+              padding: const EdgeInsets.all(15.0),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'Доступные эпохи:',
+                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                  ),
+                  SizedBox(height: 16),
+                  EraCard(
+                    context: context,
+                    title: 'Рождение кода (2005-2016)',
+                    description:
+                        'Основание компании, первые проекты и партнерства',
+                    attemptsLeft:
+                        _attemptsRemaining['Рождение кода (2005-2016)']!,
+                    onTap:
+                        () => _navigateToQuiz(
+                          context,
+                          'Рождение кода (2005-2016)',
+                        ),
+                  ),
+                  EraCard(
+                    context: context,
+                    title: 'Эпоха прорыва (2017-2019)',
+                    description:
+                        'Расширение направлений и международное присутствие',
+                    attemptsLeft:
+                        _attemptsRemaining['Эпоха прорыва (2017-2019)']!,
+                    onTap:
+                        () => _navigateToQuiz(
+                          context,
+                          'Эпоха прорыва (2017-2019)',
+                        ),
+                  ),
+                  EraCard(
+                    context: context,
+                    title: 'Цифровая революция (2020-2023)',
+                    description:
+                        'Инновационные решения и цифровая трансформация',
+                    attemptsLeft:
+                        _attemptsRemaining['Цифровая революция (2020-2023)']!,
+                    onTap:
+                        () => _navigateToQuiz(
+                          context,
+                          'Цифровая революция (2020-2023)',
+                        ),
+                  ),
+                ],
+              ),
+            ),
+          ],
         ),
       ),
     );

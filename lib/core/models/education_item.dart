@@ -14,4 +14,15 @@ class EducationItem {
     required this.correctCategory,
     required this.points,
   });
+
+  factory EducationItem.fromJson(Map<String, dynamic> json) {
+    return EducationItem(
+      id: json['id'],
+      title: json['title'],
+      shortDescription: json['shortDescription'],
+      fullDescription: json['fullDescription'],
+      correctCategory: json['correctCategory'],
+      points: json['points'],
+    );
+  }
 }

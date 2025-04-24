@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:neoflex_quest/shared/widgets/mascot_widget.dart';
+import '../../../../core/database/database_service.dart';
 import 'education_game_screen.dart';
-import 'package:neoflex_quest/core/database/database_service.dart';
+import 'package:neoflex_quest/core/services/data_service.dart';
 
 class EducationScreen extends StatefulWidget {
   final int userId;
