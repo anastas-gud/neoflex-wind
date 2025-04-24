@@ -1,7 +1,7 @@
 import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:neoflex_quest/core/constants/strings.dart';
-import 'package:neoflex_quest/core/services/auth_service.dart';
+import 'package:neoflex_quest/core/services/user_service.dart';
 import 'package:neoflex_quest/shared/widgets/mascot_widget.dart';
 import 'package:neoflex_quest/shared/widgets/secondary_button.dart';
 import 'package:neoflex_quest/shared/widgets/text_field_widget.dart';
@@ -21,7 +21,7 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
   bool _isLoading = false;
   String? _errorMessage;
 
-  final AuthService _authService = AuthService();
+  final UserService _userService = UserService();
 
   @override
   void dispose() {
@@ -41,7 +41,7 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
     });
 
     try {
-      final user = await _authService.register(
+      final user = await _userService.register(
         username: _usernameController.text.trim(),
         email: _emailController.text.trim(),
         password: _passwordController.text,

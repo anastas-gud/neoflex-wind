@@ -1,6 +1,6 @@
 import 'dart:math';
 import 'package:flutter/material.dart';
-import 'package:neoflex_quest/core/services/auth_service.dart';
+import 'package:neoflex_quest/core/services/user_service.dart';
 import 'package:neoflex_quest/features/auth/presentation/screens/registration_screen.dart';
 import 'package:neoflex_quest/shared/widgets/mascot_widget.dart';
 import 'package:neoflex_quest/shared/widgets/secondary_button.dart';
@@ -18,7 +18,7 @@ class _AuthScreenState extends State<AuthScreen> {
   bool _isLoading = false;
   String? _errorMessage;
 
-  final AuthService _authService = AuthService();
+  final UserService _userService = UserService();
 
   @override
   void dispose() {
@@ -36,7 +36,7 @@ class _AuthScreenState extends State<AuthScreen> {
     });
 
     try {
-      final user = await _authService.authenticate(
+      final user = await _userService.authenticate(
         _usernameController.text.trim(),
         _passwordController.text,
       );

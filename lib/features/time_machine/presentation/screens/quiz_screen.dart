@@ -1,9 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:neoflex_quest/core/models/question.dart';
 import 'package:neoflex_quest/core/models/user.dart';
-import 'package:neoflex_quest/core/database/database_service.dart';
-import 'package:neoflex_quest/core/services/data_service.dart';
 import 'package:neoflex_quest/core/services/time_machine_service.dart';
+import 'package:neoflex_quest/core/services/user_service.dart';
 
 class QuizScreen extends StatefulWidget {
   final int userId;
@@ -33,6 +32,7 @@ class _QuizScreenState extends State<QuizScreen> {
   bool _isSubmitting = false;
 
   TimeMachineService _timeMachineService = TimeMachineService();
+  UserService _userService = UserService();
 
   @override
   void initState() {
@@ -54,67 +54,52 @@ class _QuizScreenState extends State<QuizScreen> {
     await _timeMachineService.incrementAttempt(widget.userId, widget.era);
   }
 
+  Future<void> _updateUserPoints() async {
+    _userService.updateUserPoints(widget.userId, _score);
+  }
+
   void _submitAnswer() async {
     if (_selectedAnswer == null) return;
 
     setState(() => _isSubmitting = true);
 
-    final questions = await _questionsFuture;
-    final currentQuestion = questions[_currentQuestionIndex];
-    final isCorrect = _selectedAnswer == currentQuestion.correctAnswer;
-
-    if (isCorrect) {
-      _score += currentQuestion.points;
-      _correctAnswers++;
-    }
-
-    final connection = await DatabaseService().getConnection();
     try {
-      await connection.query(
-        'INSERT INTO user_answers (user_id, question_id, answer, is_correct) '
-        'VALUES (@userId, @questionId, @answer, @isCorrect) '
-        'ON CONFLICT (user_id, question_id) DO UPDATE '
-        'SET answer = @answer, is_correct = @isCorrect',
-        substitutionValues: {
-          'userId': widget.userId,
-          'questionId': currentQuestion.id,
-          'answer': _selectedAnswer!,
-          'isCorrect': isCorrect,
-        },
+      final questions = await _questionsFuture;
+      final currentQuestion = questions[_currentQuestionIndex];
+      final isCorrect = _selectedAnswer == currentQuestion.correctAnswer;
+
+      if (isCorrect) {
+        _score += currentQuestion.points;
+        _correctAnswers++;
+      }
+
+      await _timeMachineService.submitAnswer(
+        widget.userId,
+        currentQuestion.id,
+        _selectedAnswer!,
+        isCorrect,
       );
 
       if (_currentQuestionIndex == questions.length - 1) {
-        await _incrementAttempt(); // Увеличиваем счетчик попыток только после завершения теста
+        await _incrementAttempt();
         await _updateUserPoints();
-        widget.onUpdate(); // Вызываем callback для обновления главного экрана
+        widget.onUpdate();
+        _showResults();
       }
-    } finally {
-      await connection.close();
-    }
 
-    if (_currentQuestionIndex < questions.length - 1) {
       setState(() {
-        _currentQuestionIndex++;
-        _selectedAnswer = null;
+        if (_currentQuestionIndex < questions.length - 1) {
+          _currentQuestionIndex++;
+          _selectedAnswer = null;
+        }
         _isSubmitting = false;
       });
-    } else {
+    } catch (e) {
       setState(() => _isSubmitting = false);
-      _showResults();
+      print('Ошибка при отправке ответа: $e');
     }
   }
 
-  Future<void> _updateUserPoints() async {
-    final connection = await DatabaseService().getConnection();
-    try {
-      await connection.query(
-        'UPDATE users SET points = points + @points WHERE id = @userId',
-        substitutionValues: {'points': _score, 'userId': widget.userId},
-      );
-    } finally {
-      await connection.close();
-    }
-  }
 
   void _showResults() {
     showDialog(

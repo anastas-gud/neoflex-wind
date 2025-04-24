@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:neoflex_quest/core/models/user.dart';
-import 'package:neoflex_quest/core/services/auth_service.dart';
+import 'package:neoflex_quest/core/services/user_service.dart';
 import 'package:neoflex_quest/core/services/data_service.dart';
 import 'package:neoflex_quest/features/achievements/presentation/screens/achievements_screen.dart';
 import 'package:neoflex_quest/features/education/presentation/screens/education_screen.dart';
@@ -28,7 +28,7 @@ class _MainMenuScreenState extends State<MainMenuScreen> {
   }
 
   Future<User?> _loadUser() async {
-    final authService = AuthService();
+    final authService = UserService();
     return await authService.getUserById(widget.userId);
   }
 
@@ -39,7 +39,7 @@ class _MainMenuScreenState extends State<MainMenuScreen> {
   }
 
   void _logout() async {
-    final authService = AuthService();
+    final authService = UserService();
     await authService.logout();
     Navigator.pushReplacementNamed(context, '/');
   }

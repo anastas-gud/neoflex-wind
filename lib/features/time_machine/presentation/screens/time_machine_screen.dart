@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:neoflex_quest/core/constants/strings.dart';
 import 'package:neoflex_quest/core/models/test_attempt.dart';
-import 'package:neoflex_quest/core/services/auth_service.dart';
+import 'package:neoflex_quest/core/services/user_service.dart';
 import 'package:neoflex_quest/core/services/time_machine_service.dart';
 import 'package:neoflex_quest/features/time_machine/presentation/screens/quiz_screen.dart';
 import 'package:neoflex_quest/features/time_machine/presentation/widgets/era_card.dart';
@@ -29,7 +29,7 @@ class _TimeMachineScreenState extends State<TimeMachineScreen> {
   };
 
   final TimeMachineService _timeMachineService = TimeMachineService();
-  final AuthService _authService = AuthService();
+  final UserService _userService = UserService();
 
   @override
   void initState() {
@@ -45,7 +45,8 @@ class _TimeMachineScreenState extends State<TimeMachineScreen> {
         String displayEra = _getDisplayEraName(attempt.era);
         int used = attempt.attemptsUsed;
         if (_attemptsRemaining.containsKey(displayEra)) {
-          _attemptsRemaining[displayEra] = 3 - used;
+          if (3 - used < _attemptsRemaining[displayEra]!){
+          _attemptsRemaining[displayEra] = 3 - used;}
         }
       }
     });
@@ -83,8 +84,9 @@ class _TimeMachineScreenState extends State<TimeMachineScreen> {
       return;
     }
 
-    final user = await _authService.getUserById(widget.userId);
+    final user = await _userService.getUserById(widget.userId);
     if (user == null) throw Exception('Пользователь не найден');
+
     Navigator.push(
       context,
       MaterialPageRoute(
