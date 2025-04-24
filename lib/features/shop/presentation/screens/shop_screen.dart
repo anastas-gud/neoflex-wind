@@ -6,6 +6,8 @@ import 'package:neoflex_quest/core/services/shop_service.dart';
 import 'package:neoflex_quest/core/database/database_service.dart';
 import 'package:neoflex_quest/shared/widgets/small_mascot_widget.dart';
 
+import '../../../../shared/widgets/mascot_widget.dart';
+
 class ShopScreen extends StatefulWidget {
   final int userId;
   final VoidCallback onUpdate;
@@ -50,8 +52,7 @@ class _ShopScreenState extends State<ShopScreen> {
       _tapCount = 0;
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text('Секретное достижение разблокировано! +10 мандаринок'),
-        ),
+            content: Text('Секретное достижение разблокировано! +10 мандаринок')),
       );
     }
   }
@@ -71,9 +72,8 @@ class _ShopScreenState extends State<ShopScreen> {
         });
       }
     } catch (e) {
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text('Ошибка: ${e.toString()}')));
+      ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Ошибка: ${e.toString()}')));
     }
   }
 
@@ -95,9 +95,8 @@ class _ShopScreenState extends State<ShopScreen> {
 
           double _boxWidth = min(MediaQuery.of(context).size.width * 0.9, 450);
           return ScrollConfiguration(
-            behavior: ScrollConfiguration.of(
-              context,
-            ).copyWith(scrollbars: false),
+            behavior:
+            ScrollConfiguration.of(context).copyWith(scrollbars: false),
             child: SingleChildScrollView(
               child: Column(
                 children: [
@@ -106,10 +105,8 @@ class _ShopScreenState extends State<ShopScreen> {
                     "Торговая точка",
                     style: TextStyle(fontSize: 25, fontWeight: FontWeight.bold),
                   ),
-                  SmallMascotWidget(
-                    boxWidth: _boxWidth,
-                    message:
-                        'Инициализация торгового протокола…\n'
+                  MascotWidget(
+                    message: 'Инициализация торгового протокола…\n'
                         'Внимание, юнит! Здесь циркулируют Мандаринки – валюта умных и быстрых. '
                         'Обменивай, трать, получай артефакты.\n'
                         'Рекомендация: действуйте без задержек!',
@@ -124,22 +121,42 @@ class _ShopScreenState extends State<ShopScreen> {
                     itemBuilder: (context, index) {
                       final item = items[index];
                       return Card(
-                        child: ListTile(
-                          leading: Image.asset(
-                            item.imagePath,
-                            width: 50,
-                            errorBuilder:
-                                (_, __, ___) => Icon(Icons.shopping_bag),
-                          ),
-                          title: Text(item.name),
-                          subtitle: Text(item.description),
-                          trailing: Column(
-                            mainAxisSize: MainAxisSize.min,
+                        child: Padding(
+                          padding: const EdgeInsets.all(12.0),
+                          child: Row(
                             children: [
-                              Text('${item.price} мандаринок'),
-                              ElevatedButton(
-                                onPressed: () => _buyItem(item),
-                                child: Text('Купить'),
+                              Image.asset(
+                                item.imagePath,
+                                width: 50,
+                                height: 50,
+                                errorBuilder: (_, __, ___) =>
+                                    Icon(Icons.shopping_bag, size: 50),
+                              ),
+                              SizedBox(width: 12),
+                              Expanded(
+                                child: Column(
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    children: [
+                                      Text(item.name,
+                                          style: TextStyle(
+                                              fontWeight: FontWeight.bold)),
+                                      SizedBox(height: 4),
+                                      Text(item.description,
+                                          style: TextStyle(fontSize: 12)),
+                                      SizedBox(height: 4),
+                                      Text('${item.price} мандаринок',
+                                          style: TextStyle(
+                                              color: Colors.orange,
+                                              fontWeight: FontWeight.bold)),
+                                    ]),
+                              ),
+                              SizedBox(width: 12),
+                              SizedBox(
+                                height: 40, // Фиксированная высота кнопки
+                                child: ElevatedButton(
+                                  onPressed: () => _buyItem(item),
+                                  child: Text('Купить'),
+                                ),
                               ),
                             ],
                           ),

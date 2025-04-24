@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+import '../../core/constants/colors.dart';
+
 class CustomTextFormField extends StatelessWidget {
   final double boxWidth;
   final TextEditingController? controller;
@@ -32,12 +34,22 @@ class CustomTextFormField extends StatelessWidget {
         controller: controller,
         decoration: InputDecoration(
           labelText: labelText,
+          floatingLabelBehavior: FloatingLabelBehavior.never,
           prefixIcon: prefixIcon != null ? Icon(prefixIcon) : null,
-          border: OutlineInputBorder(),
+          border: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(25.0),
+            borderSide: BorderSide(color: AppColors.blue),
+          ),
           contentPadding: const EdgeInsets.symmetric(
-            vertical: 10,
+            vertical: 16,
             horizontal: 15,
           ),
+          // Исправленный вариант для labelStyle
+          labelStyle: TextStyle(
+            backgroundColor: Theme.of(context).scaffoldBackgroundColor,
+          ),
+          // Добавляем отступы вокруг всего label
+          isDense: true,
         ),
         obscureText: obscureText,
         validator: validator,

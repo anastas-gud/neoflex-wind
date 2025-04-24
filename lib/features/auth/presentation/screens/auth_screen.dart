@@ -1,6 +1,7 @@
 import 'dart:math';
 
 import 'package:flutter/material.dart';
+import 'package:neoflex_quest/core/constants/colors.dart';
 import 'package:neoflex_quest/core/services/auth_service.dart';
 import 'package:neoflex_quest/core/database/database_service.dart';
 import 'package:neoflex_quest/features/auth/presentation/screens/registration_screen.dart';
@@ -133,6 +134,8 @@ class _AuthScreenState extends State<AuthScreen> {
                     SecondaryButtonWidget(
                       boxWidth: _boxWidth,
                       text: "Войти",
+                      backgroundColor: AppColors.orange,
+                      borderColor: AppColors.orange,
                       onPressed: _isLoading ? null : _login,
                       child:
                           _isLoading
@@ -144,6 +147,8 @@ class _AuthScreenState extends State<AuthScreen> {
                     SizedBox(height: 30),
                     SecondaryButtonWidget(
                       boxWidth: _boxWidth,
+                      backgroundColor: AppColors.white,
+                      borderColor: AppColors.blue,
                       text: "Создать аккаунт",
                       onPressed: () {
                         Navigator.push(

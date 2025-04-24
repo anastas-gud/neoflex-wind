@@ -36,6 +36,7 @@ class _TutorialScreenState extends State<TutorialScreen> {
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             MascotWidget(
+              key: ValueKey(_currentPage),
               message: _tutorialPages[_currentPage],
               mascotSize: 120,
             ),
