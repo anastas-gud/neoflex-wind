@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:neoflex_quest/shared/widgets/mascot_widget.dart';
-import '../../../../core/database/database_service.dart';
+import '../../../../core/services/education_service.dart';
 import 'education_game_screen.dart';
 import 'package:neoflex_quest/core/services/data_service.dart';
 
@@ -22,6 +22,8 @@ class _EducationScreenState extends State<EducationScreen> {
   int _attemptsLeft = 3;
   bool _loadingAttempts = true;
 
+  final EducationService _educationService = EducationService();
+
   @override
   void initState() {
     super.initState();
@@ -29,24 +31,12 @@ class _EducationScreenState extends State<EducationScreen> {
   }
 
   Future<void> _loadAttempts() async {
-    final connection = await DatabaseService().getConnection();
-    try {
-      final results = await connection.query(
-        'SELECT attempts_used, max_attempts FROM education_attempts WHERE user_id = @userId',
-        substitutionValues: {'userId': widget.userId},
-      );
+    final attemptsData = await _educationService.getEducationAttempts(widget.userId);
 
-      setState(() {
-        if (results.isNotEmpty) {
-          final attemptsUsed = results[0][0] as int;
-          final maxAttempts = results[0][1] as int;
-          _attemptsLeft = maxAttempts - attemptsUsed;
-        }
-        _loadingAttempts = false;
-      });
-    } finally {
-      await connection.close();
-    }
+    setState(() {
+      _attemptsLeft = attemptsData['maxAttempts']! - attemptsData['attemptsUsed']!;
+      _loadingAttempts = false;
+    });
   }
 
   @override

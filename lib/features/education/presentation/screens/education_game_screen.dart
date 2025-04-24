@@ -4,6 +4,7 @@ import 'package:neoflex_quest/core/services/data_service.dart';
 import 'package:neoflex_quest/shared/widgets/mascot_widget.dart';
 
 import '../../../../core/database/database_service.dart';
+import '../../../../core/services/education_service.dart';
 
 class EducationGameScreen extends StatefulWidget {
   final int userId;
@@ -29,6 +30,8 @@ class _EducationGameScreenState extends State<EducationGameScreen> {
   int _attemptsLeft = 3;
   bool _attemptsExceeded = false;
 
+  final EducationService _educationService = EducationService();
+
   @override
   void initState() {
     super.initState();
@@ -42,111 +45,45 @@ class _EducationGameScreenState extends State<EducationGameScreen> {
   }
 
   Future<List<EducationItem>> _loadItems() async {
-    final connection = await DatabaseService().getConnection();
-    try {
-      final results = await connection.query('SELECT * FROM education_items');
-      return results.map((row) => EducationItem(
-        id: row[0] as int,
-        title: row[1] as String,
-        shortDescription: row[2] as String,
-        fullDescription: row[3] as String,
-        correctCategory: row[4] as String,
-        points: row[5] as int,
-      )).toList();
-    } finally {
-      await connection.close();
-    }
+    return await _educationService.getEducationItems();
   }
 
   Future<void> _loadAttempts() async {
-    final connection = await DatabaseService().getConnection();
-    try {
-      final results = await connection.query(
-        'SELECT attempts_used, max_attempts FROM education_attempts WHERE user_id = @userId',
-        substitutionValues: {'userId': widget.userId},
-      );
+    final attemptsData = await _educationService.getEducationAttempts(widget.userId);
 
-      if (results.isNotEmpty) {
-        final attemptsUsed = results[0][0] as int;
-        final maxAttempts = results[0][1] as int;
-        setState(() {
-          _attemptsLeft = maxAttempts - attemptsUsed;
-          _attemptsExceeded = attemptsUsed >= maxAttempts;
-        });
-      }
-    } finally {
-      await connection.close();
-    }
+    setState(() {
+      _attemptsLeft = attemptsData['maxAttempts']! - attemptsData['attemptsUsed']!;
+      _attemptsExceeded = attemptsData['maxAttempts']! <= attemptsData['attemptsUsed']!;
+    });
   }
 
   Future<void> _incrementAttempts() async {
-    final connection = await DatabaseService().getConnection();
     try {
-      await connection.query(
-        'INSERT INTO education_attempts (user_id, attempts_used, last_attempt, max_attempts) '
-            'VALUES (@userId, 1, CURRENT_TIMESTAMP, 3) '
-            'ON CONFLICT (user_id) DO UPDATE '
-            'SET attempts_used = education_attempts.attempts_used + 1, '
-            'last_attempt = CURRENT_TIMESTAMP',
-        substitutionValues: {'userId': widget.userId},
-      );
+      await EducationService().incrementAttempts(widget.userId);
 
       setState(() {
         _attemptsLeft--;
         _attemptsExceeded = _attemptsLeft <= 0;
       });
-    } finally {
-      await connection.close();
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Ошибка при обновлении попыток: $e')),
+      );
     }
   }
 
   Future<void> _saveUserAnswers() async {
-    final connection = await DatabaseService().getConnection();
     try {
-      for (var item in _topContainer) {
-        await connection.query(
-          'INSERT INTO education_answers (user_id, item_id, selected_category, is_correct) '
-              'VALUES (@userId, @itemId, @category, @isCorrect) '
-              'ON CONFLICT (user_id, item_id) DO UPDATE '
-              'SET selected_category = @category, is_correct = @isCorrect',
-          substitutionValues: {
-            'userId': widget.userId,
-            'itemId': item.id,
-            'category': 'children',
-            'isCorrect': item.correctCategory == 'children',
-          },
-        );
-      }
-
-      for (var item in _bottomContainer) {
-        await connection.query(
-          'INSERT INTO education_answers (user_id, item_id, selected_category, is_correct) '
-              'VALUES (@userId, @itemId, @category, @isCorrect) '
-              'ON CONFLICT (user_id, item_id) DO UPDATE '
-              'SET selected_category = @category, is_correct = @isCorrect',
-          substitutionValues: {
-            'userId': widget.userId,
-            'itemId': item.id,
-            'category': 'adults',
-            'isCorrect': item.correctCategory == 'adults',
-          },
-        );
-      }
-
-      final correctAnswers = _topContainer.where((item) => item.correctCategory == 'children').length +
-          _bottomContainer.where((item) => item.correctCategory == 'adults').length;
-
-      final pointsEarned = correctAnswers * 2;
-
-      await connection.query(
-        'UPDATE users SET points = points + @points WHERE id = @userId',
-        substitutionValues: {
-          'points': pointsEarned,
-          'userId': widget.userId,
-        },
+      await EducationService().saveUserAnswers(
+        userId: widget.userId,
+        topContainer: _topContainer,
+        bottomContainer: _bottomContainer,
       );
-    } finally {
-      await connection.close();
+      widget.onUpdate(); // Обновляем данные пользователя
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Ошибка сохранения: $e')),
+      );
     }
   }
 

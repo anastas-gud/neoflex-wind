@@ -101,8 +101,6 @@ class _MascotWidgetState extends State<MascotWidget>
                 width: widget.mascotSize,
                 height: widget.mascotSize,
                 placeholderBuilder: (context) => CircularProgressIndicator(),
-                errorBuilder:
-                    (_, __, ___) => Icon(Icons.android, size: widget.mascotSize),
               ),
             ],
           ),

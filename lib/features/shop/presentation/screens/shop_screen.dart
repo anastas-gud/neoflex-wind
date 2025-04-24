@@ -36,7 +36,7 @@ class _ShopScreenState extends State<ShopScreen> {
   }
 
   Future<List<ShopItem>> _loadItems() async {
-    final shopService = ShopService(databaseService: DatabaseService());
+    final shopService = ShopService();
     return await shopService.getShopItems();
   }
 
@@ -60,22 +60,40 @@ class _ShopScreenState extends State<ShopScreen> {
   }
 
   Future<void> _buyItem(ShopItem item) async {
-    final shopService = ShopService(databaseService: DatabaseService());
+    final shopService = ShopService();
     try {
-      final success = await shopService.purchaseItem(widget.userId, item.id);
+      final response = await shopService.purchaseItem(widget.userId, item.id);
 
-      if (success) {
+      // Проверяем статус покупки в ответе
+      if (response['success'] == true) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Покупка совершена!')),
+          SnackBar(
+            content: Text(response['message'] ?? 'Покупка совершена!'),
+            duration: const Duration(seconds: 2),
+          ),
         );
-        widget.onUpdate(); // Вызываем callback для обновления главного экрана
+
+        // Обновляем состояние
+        widget.onUpdate();
         setState(() {
-          _itemsFuture = _loadItems(); // Обновляем список товаров
+          _itemsFuture = _loadItems();
         });
+      } else {
+        // Если success == false, но статус 201
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(response['message'] ?? 'Покупка не завершена'),
+            backgroundColor: Colors.orange,
+          ),
+        );
       }
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Ошибка: ${e.toString()}')));
+        SnackBar(
+          content: Text('Ошибка: ${e.toString()}'),
+          backgroundColor: Colors.red,
+        ),
+      );
     }
   }
 
