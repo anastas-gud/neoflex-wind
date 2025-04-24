@@ -1,15 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:neoflex_quest/core/models/user.dart';
 import 'package:neoflex_quest/core/services/user_service.dart';
-import 'package:neoflex_quest/core/services/data_service.dart';
 import 'package:neoflex_quest/features/achievements/presentation/screens/achievements_screen.dart';
 import 'package:neoflex_quest/features/education/presentation/screens/education_screen.dart';
 import 'package:neoflex_quest/features/shop/presentation/screens/shop_screen.dart';
 import 'package:neoflex_quest/features/time_machine/presentation/screens/time_machine_screen.dart';
 import 'package:neoflex_quest/features/tutorial/presentation/screens/tutorial_screen.dart';
-
-import '../../../../core/constants/colors.dart';
-import '../../../../shared/widgets/game_button_with_animation.dart';
+import 'package:neoflex_quest/core/constants/colors.dart';
+import 'package:neoflex_quest/shared/widgets/game_button_with_animation.dart';
 
 class MainMenuScreen extends StatefulWidget {
   final int userId;
@@ -65,16 +63,25 @@ class _MainMenuScreenState extends State<MainMenuScreen> {
 
         return Scaffold(
           appBar: AppBar(
+            elevation: 0,
+            scrolledUnderElevation: 0,
             automaticallyImplyLeading: false,
-            toolbarHeight: 90,
-            backgroundColor: AppColors.softLavender,
+            toolbarHeight: 100,
+            backgroundColor: AppColors.lightLavender,
             title: Padding(
               padding: EdgeInsets.all(10),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  Text(user.username, style: TextStyle(fontSize: 25)),
+                  Text(
+                    user.username,
+                    style: TextStyle(
+                      fontSize: 32,
+                      color: AppColors.orange,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
                   SizedBox(height: 5),
                   Row(
                     children: [
@@ -83,7 +90,14 @@ class _MainMenuScreenState extends State<MainMenuScreen> {
                         width: 40,
                         errorBuilder: (_, __, ___) => Icon(Icons.attach_money),
                       ),
-                      Text(' ${user.points}', style: TextStyle(fontSize: 23)),
+                      Text(
+                        ' ${user.points}',
+                        style: TextStyle(
+                          fontSize: 28,
+                          fontWeight: FontWeight.w600,
+                          color: AppColors.softOrange,
+                        ),
+                      ),
                     ],
                   ),
                 ],
@@ -95,7 +109,7 @@ class _MainMenuScreenState extends State<MainMenuScreen> {
                 child: Padding(
                   padding: EdgeInsets.only(right: 0),
                   child: IconButton(
-                    icon: Icon(Icons.help, size: 32),
+                    icon: Icon(Icons.help, size: 32, color: AppColors.darkBlue),
                     onPressed:
                         () => Navigator.push(
                           context,
@@ -112,7 +126,11 @@ class _MainMenuScreenState extends State<MainMenuScreen> {
                 child: Padding(
                   padding: EdgeInsets.only(right: 10),
                   child: IconButton(
-                    icon: Icon(Icons.exit_to_app, size: 32),
+                    icon: Icon(
+                      Icons.exit_to_app,
+                      size: 32,
+                      color: AppColors.darkBlue,
+                    ),
                     onPressed: _logout,
                   ),
                 ),
@@ -123,53 +141,66 @@ class _MainMenuScreenState extends State<MainMenuScreen> {
             index: _currentIndex,
             children: [
               Center(
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    ShaderMask(
-                      blendMode: BlendMode.srcIn,
-                      shaderCallback: (Rect bounds) {
-                        return AppColors.orangeGradient.createShader(bounds);
-                      },
-                      child: Text(
-                        "NEOQUESTOPIA",
-                        style: TextStyle(
-                          fontSize: 40,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                    ),
-                    SizedBox(height: 30),
-                    _buildGameButton(
-                      'Машина времени',
-                      'assets/images/time_machine.png',
-                      () => Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder:
-                              (context) => TimeMachineScreen(
-                                userId: user.id,
-                                onUpdate: _refreshUser,
+                child: ScrollConfiguration(
+                  behavior: ScrollConfiguration.of(
+                    context,
+                  ).copyWith(scrollbars: false),
+                  child: SingleChildScrollView(
+                    child: Padding(
+                      padding: const EdgeInsets.only(top: 15.0, bottom: 40),
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          ShaderMask(
+                            blendMode: BlendMode.srcIn,
+                            shaderCallback: (Rect bounds) {
+                              return AppColors.orangeGradient.createShader(
+                                bounds,
+                              );
+                            },
+                            child: Text(
+                              "NEOQUESTOPIA",
+                              style: TextStyle(
+                                fontSize: 48,
+                                fontWeight: FontWeight.w600,
+                                letterSpacing: -1.8,
                               ),
-                        ),
-                      ),
-                    ),
-                    SizedBox(height: 60),
-                    _buildGameButton(
-                      'Образовательные миссии',
-                      'assets/images/education.png',
-                      () => Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder:
-                              (context) => EducationScreen(
-                                userId: user.id,
-                                onUpdate: _refreshUser,
+                            ),
+                          ),
+                          SizedBox(height: 30),
+                          _buildGameButton(
+                            'Машина времени'.toUpperCase(),
+                            'assets/images/time_machine.png',
+                            () => Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder:
+                                    (context) => TimeMachineScreen(
+                                      userId: user.id,
+                                      onUpdate: _refreshUser,
+                                    ),
                               ),
-                        ),
+                            ),
+                          ),
+                          SizedBox(height: 60),
+                          _buildGameButton(
+                            'Образовательные миссии'.toUpperCase(),
+                            'assets/images/education.png',
+                            () => Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder:
+                                    (context) => EducationScreen(
+                                      userId: user.id,
+                                      onUpdate: _refreshUser,
+                                    ),
+                              ),
+                            ),
+                          ),
+                        ],
                       ),
                     ),
-                  ],
+                  ),
                 ),
               ),
               ShopScreen(userId: user.id, onUpdate: _refreshUser),
@@ -179,6 +210,8 @@ class _MainMenuScreenState extends State<MainMenuScreen> {
           bottomNavigationBar: BottomNavigationBar(
             currentIndex: _currentIndex,
             onTap: (index) => setState(() => _currentIndex = index),
+            selectedItemColor: AppColors.blue,
+            unselectedItemColor: AppColors.darkBlue,
             items: [
               BottomNavigationBarItem(icon: Icon(Icons.home), label: 'Главная'),
               BottomNavigationBarItem(icon: Icon(Icons.shop), label: 'Магазин'),

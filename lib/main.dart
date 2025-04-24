@@ -14,7 +14,7 @@ void main() async {
     MaterialApp(
       title: 'NeoQuestopia',
       theme: ThemeData(
-        primarySwatch: Colors.orange,
+        primarySwatch: Colors.purple,
         fontFamily: 'Montserrat',
         visualDensity: VisualDensity.adaptivePlatformDensity,
       ),

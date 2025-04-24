@@ -1,8 +1,12 @@
 import 'dart:math';
 import 'package:flutter/material.dart';
+import 'package:neoflex_quest/core/constants/colors.dart';
+import 'package:neoflex_quest/core/constants/strings.dart';
 import 'package:neoflex_quest/core/services/user_service.dart';
 import 'package:neoflex_quest/features/auth/presentation/screens/registration_screen.dart';
+import 'package:neoflex_quest/features/tutorial/presentation/widgets/tutorial_mascot_widget.dart';
 import 'package:neoflex_quest/shared/widgets/mascot_widget.dart';
+import 'package:neoflex_quest/shared/widgets/primary_button.dart';
 import 'package:neoflex_quest/shared/widgets/secondary_button.dart';
 import 'package:neoflex_quest/shared/widgets/text_field_widget.dart';
 
@@ -106,7 +110,7 @@ class _AuthScreenState extends State<AuthScreen> {
                           return 'Введите пароль';
                         }
                         if (value.length < 6) {
-                          return 'Пароль должен содержать минимум 6 символов';
+                          return 'Пароль содержит мин 6 символов';
                         }
                         return null;
                       },
@@ -120,11 +124,9 @@ class _AuthScreenState extends State<AuthScreen> {
                           style: TextStyle(color: Colors.red),
                         ),
                       ),
-                    SecondaryButtonWidget(
+                    PrimaryButtonWidget(
                       boxWidth: _boxWidth,
                       text: "Войти",
-                      backgroundColor: AppColors.orange,
-                      borderColor: AppColors.orange,
                       onPressed: _isLoading ? null : _login,
                       child:
                           _isLoading
@@ -132,12 +134,16 @@ class _AuthScreenState extends State<AuthScreen> {
                               : null,
                     ),
                     SizedBox(height: 30),
-                    Text("Еще нет аккаунта?"),
+                    Text(
+                      "Еще нет аккаунта?",
+                      style: TextStyle(
+                        color: AppColors.darkPurple,
+                        fontSize: 15,
+                      ),
+                    ),
                     SizedBox(height: 30),
                     SecondaryButtonWidget(
                       boxWidth: _boxWidth,
-                      backgroundColor: AppColors.white,
-                      borderColor: AppColors.blue,
                       text: "Создать аккаунт",
                       onPressed: () {
                         Navigator.push(

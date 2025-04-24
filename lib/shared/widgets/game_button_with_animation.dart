@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:neoflex_quest/core/constants/colors.dart';
 
 class GameButtonWithAnimation extends StatefulWidget {
   final String title;
@@ -12,7 +13,8 @@ class GameButtonWithAnimation extends StatefulWidget {
   });
 
   @override
-  _GameButtonWithAnimationState createState() => _GameButtonWithAnimationState();
+  _GameButtonWithAnimationState createState() =>
+      _GameButtonWithAnimationState();
 }
 
 class _GameButtonWithAnimationState extends State<GameButtonWithAnimation>
@@ -26,15 +28,12 @@ class _GameButtonWithAnimationState extends State<GameButtonWithAnimation>
     _controller = AnimationController(
       duration: const Duration(seconds: 2),
       vsync: this,
-    )..repeat(reverse: true); // Автоматическое повторение анимации
+    )..repeat(reverse: true);
 
     _offsetAnimation = Tween<Offset>(
       begin: Offset.zero,
-      end: const Offset(0, 0.1), // Движение вниз на 10% высоты
-    ).animate(CurvedAnimation(
-      parent: _controller,
-      curve: Curves.easeInOut, // Плавное ускорение/замедление
-    ));
+      end: const Offset(0, 0.1),
+    ).animate(CurvedAnimation(parent: _controller, curve: Curves.easeInOut));
   }
 
   @override
@@ -55,13 +54,19 @@ class _GameButtonWithAnimationState extends State<GameButtonWithAnimation>
             child: Image.asset(
               widget.imagePath,
               width: 200,
-              errorBuilder: (_, __, ___) => Icon(Icons.question_mark, size: 100),
+              errorBuilder:
+                  (_, __, ___) => Icon(Icons.question_mark, size: 100),
             ),
           ),
           const SizedBox(height: 10),
           Text(
             widget.title,
-            style: const TextStyle(fontSize: 20),
+            style: const TextStyle(
+              fontSize: 24,
+              color: AppColors.pink,
+              fontWeight: FontWeight.bold,
+              letterSpacing: -1.8,
+            ),
           ),
         ],
       ),

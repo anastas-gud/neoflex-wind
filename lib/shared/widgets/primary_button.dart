@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:neoflex_quest/core/constants/colors.dart';
 
-class SecondaryButtonWidget extends StatelessWidget {
+class PrimaryButtonWidget extends StatelessWidget {
   final double boxWidth;
   final String text;
   final Widget? child;
@@ -10,14 +10,14 @@ class SecondaryButtonWidget extends StatelessWidget {
   final Color backgroundColor;
   final Color textColor;
 
-  const SecondaryButtonWidget({
+  const PrimaryButtonWidget({
     this.text = "",
     this.boxWidth = 100,
     this.child,
     this.onPressed,
-    this.borderColor = AppColors.orange,
-    this.backgroundColor = AppColors.white,
-    this.textColor = AppColors.orange,
+    this.borderColor = AppColors.softOrange,
+    this.backgroundColor = AppColors.softOrange,
+    this.textColor = AppColors.delicatePink,
     Key? key,
   }) : super(key: key);
 
@@ -30,10 +30,10 @@ class SecondaryButtonWidget extends StatelessWidget {
         child: ElevatedButton(
           onPressed: onPressed,
           style: ElevatedButton.styleFrom(
-            side: BorderSide(color: borderColor, width: 2.0, strokeAlign: BorderSide.strokeAlignOutside,),
+            side: BorderSide(color: borderColor),
             backgroundColor: backgroundColor,
             foregroundColor: textColor,
-            padding: const EdgeInsets.symmetric(vertical: 17, horizontal: 16),
+            padding: const EdgeInsets.symmetric(vertical: 19, horizontal: 16),
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(25.0),
               side: BorderSide(color: borderColor, width: 2),

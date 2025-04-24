@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:neoflex_quest/core/constants/strings.dart';
 import 'package:neoflex_quest/core/services/user_service.dart';
 import 'package:neoflex_quest/shared/widgets/mascot_widget.dart';
+import 'package:neoflex_quest/shared/widgets/primary_button.dart';
 import 'package:neoflex_quest/shared/widgets/secondary_button.dart';
 import 'package:neoflex_quest/shared/widgets/text_field_widget.dart';
 import 'package:neoflex_quest/features/tutorial/presentation/screens/tutorial_screen.dart';
@@ -110,7 +111,7 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
                           return 'Введите логин';
                         }
                         if (value.length < 4) {
-                          return 'Логин должен содержать минимум 4 символа';
+                          return 'Логин должен быть мин 4 символа';
                         }
                         return null;
                       },
@@ -144,7 +145,7 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
                           return 'Введите пароль';
                         }
                         if (value.length < 6) {
-                          return 'Пароль должен содержать минимум 6 символов';
+                          return 'Пароль должен быть мин 6 символов';
                         }
                         return null;
                       },
@@ -175,10 +176,8 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
                           style: TextStyle(color: Colors.red),
                         ),
                       ),
-                    SecondaryButtonWidget(
+                    PrimaryButtonWidget(
                       boxWidth: _boxWidth,
-                      backgroundColor: AppColors.orange,
-                      borderColor: AppColors.orange,
                       text: 'Создать аккаунт',
                       onPressed: _register,
                       child:
@@ -187,12 +186,16 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
                               : null,
                     ),
                     SizedBox(height: 30),
-                    Text("или"),
+                    Text(
+                      "или",
+                      style: TextStyle(
+                        color: AppColors.darkPurple,
+                        fontSize: 15,
+                      ),
+                    ),
                     SizedBox(height: 30),
                     SecondaryButtonWidget(
                       boxWidth: _boxWidth,
-                      backgroundColor: AppColors.white,
-                      borderColor: AppColors.blue,
                       text: 'Вернуться ко входу',
                       onPressed: () => Navigator.pop(context),
                     ),

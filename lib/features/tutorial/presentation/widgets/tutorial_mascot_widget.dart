@@ -1,29 +1,30 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_svg/flutter_svg.dart';
 import 'package:neoflex_quest/core/constants/colors.dart';
-import 'animated_text.dart';
+import 'package:neoflex_quest/shared/widgets/animated_text.dart';
 
-class MascotWidget extends StatefulWidget {
+class TutorialMascotWidget extends StatefulWidget {
   final String title;
   final String message;
   final double mascotSize;
   final double boxWidth;
   final Duration typingSpeed;
+  final Widget? buttons;
 
-  const MascotWidget({
+  const TutorialMascotWidget({
     this.title = '',
     required this.message,
-    this.mascotSize = 130,
-    this.boxWidth = 350,
+    this.mascotSize = 150,
+    this.boxWidth = 420,
     this.typingSpeed = const Duration(milliseconds: 30),
+    this.buttons,
     Key? key,
   }) : super(key: key);
 
   @override
-  _MascotWidgetState createState() => _MascotWidgetState();
+  _TutorialMascotWidgetState createState() => _TutorialMascotWidgetState();
 }
 
-class _MascotWidgetState extends State<MascotWidget>
+class _TutorialMascotWidgetState extends State<TutorialMascotWidget>
     with SingleTickerProviderStateMixin {
   late AnimationController _typingController;
   late Animation<int> _typingAnimation;
@@ -58,16 +59,16 @@ class _MascotWidgetState extends State<MascotWidget>
   @override
   Widget build(BuildContext context) {
     return ConstrainedBox(
-      constraints: BoxConstraints(maxWidth: widget.boxWidth),
+      constraints: BoxConstraints(maxWidth: widget.boxWidth, minHeight: 600),
       child: Center(
         child: Padding(
           padding: const EdgeInsets.all(15),
-          child: Row(
+          child: Column(
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
               Container(
-                constraints: BoxConstraints(maxWidth: widget.boxWidth * 0.5),
+                constraints: BoxConstraints(maxWidth: widget.boxWidth * 0.85),
                 padding: const EdgeInsets.all(15),
                 decoration: BoxDecoration(
                   color: AppColors.softLavender,
@@ -85,24 +86,38 @@ class _MascotWidgetState extends State<MascotWidget>
                           style: const TextStyle(
                             fontSize: 20,
                             fontWeight: FontWeight.bold,
-                            color: AppColors.darkPurple
+                            color: AppColors.darkPurple,
                           ),
                         ),
                       ),
                     AnimatedText(
                       text: _displayedMessage,
-                      style: const TextStyle(fontSize: 16, color: AppColors.darkPurple),
+                      style: const TextStyle(
+                        fontSize: 20,
+                        color: AppColors.darkPurple,
+                      ),
                     ),
                   ],
                 ),
               ),
-              const SizedBox(width: 15),
-              SvgPicture.asset(
-                'assets/svg/neonchik.svg',
-                width: widget.mascotSize,
-                height: widget.mascotSize,
-                placeholderBuilder:
-                    (context) => Icon(Icons.android, size: widget.mascotSize),
+              const SizedBox(width: 20),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: [
+                  Image.asset(
+                    'assets/images/tutorial.png',
+                    width: widget.mascotSize,
+                    height: widget.mascotSize,
+                    errorBuilder:
+                        (_, __, ___) =>
+                            Icon(Icons.android, size: widget.mascotSize),
+                  ),
+                  SizedBox(width: 10),
+                  Column(
+                    children: [if (widget.buttons != null) widget.buttons!],
+                  ),
+                ],
               ),
             ],
           ),

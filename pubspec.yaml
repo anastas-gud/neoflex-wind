@@ -26,7 +26,6 @@ flutter:
     - assets/
     - assets/images/
     - assets/svg/
-    - assets/animations/
   fonts:
     - family: Montserrat
       fonts:

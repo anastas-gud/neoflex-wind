@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
-
-import '../../core/constants/colors.dart';
+import 'package:neoflex_quest/core/constants/colors.dart';
 
 class CustomTextFormField extends StatelessWidget {
   final double boxWidth;
@@ -32,24 +31,50 @@ class CustomTextFormField extends StatelessWidget {
       constraints: BoxConstraints(maxWidth: boxWidth),
       child: TextFormField(
         controller: controller,
+        style: TextStyle(
+          color: AppColors.lightPurple,
+          fontWeight: FontWeight.w600,
+          fontSize: 17,
+        ),
         decoration: InputDecoration(
           labelText: labelText,
           floatingLabelBehavior: FloatingLabelBehavior.never,
-          prefixIcon: prefixIcon != null ? Icon(prefixIcon) : null,
-          border: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(25.0),
-            borderSide: BorderSide(color: AppColors.blue),
+          prefixIcon:
+              prefixIcon != null
+                  ? Padding(
+                    padding: EdgeInsets.only(left: 15),
+                    child: Icon(prefixIcon, color: AppColors.lightPurple),
+                  )
+                  : null,
+          contentPadding: const EdgeInsets.only(
+            top: 16,
+            bottom: 16,
+            left: 10,
+            right: 15,
           ),
-          contentPadding: const EdgeInsets.symmetric(
-            vertical: 16,
-            horizontal: 15,
-          ),
-          // Исправленный вариант для labelStyle
           labelStyle: TextStyle(
             backgroundColor: Theme.of(context).scaffoldBackgroundColor,
+            fontSize: 17,
+            fontWeight: FontWeight.w500,
+            color: AppColors.lightPurple,
           ),
-          // Добавляем отступы вокруг всего label
           isDense: true,
+          enabledBorder: OutlineInputBorder(
+            borderSide: BorderSide(color: AppColors.lightPurple, width: 2),
+            borderRadius: BorderRadius.circular(25.0),
+          ),
+          focusedBorder: OutlineInputBorder(
+            borderSide: BorderSide(color: AppColors.blue, width: 2),
+            borderRadius: BorderRadius.circular(25.0),
+          ),
+          errorBorder: OutlineInputBorder(
+            borderSide: BorderSide(color: Colors.red, width: 3),
+            borderRadius: BorderRadius.circular(25.0),
+          ),
+          focusedErrorBorder: OutlineInputBorder(
+            borderSide: BorderSide(color: AppColors.blue, width: 2),
+            borderRadius: BorderRadius.circular(25.0),
+          ),
         ),
         obscureText: obscureText,
         validator: validator,
