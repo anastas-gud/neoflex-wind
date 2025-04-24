@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:neoflex_quest/core/constants/colors.dart';
+import 'package:neoflex_quest/core/constants/strings.dart';
 import 'package:neoflex_quest/shared/widgets/mascot_widget.dart';
-import '../../../../core/services/education_service.dart';
+import 'package:neoflex_quest/core/services/education_service.dart';
+import 'package:neoflex_quest/shared/widgets/small_mascot_widget.dart';
 import 'education_game_screen.dart';
-import 'package:neoflex_quest/core/services/data_service.dart';
 
 class EducationScreen extends StatefulWidget {
   final int userId;
@@ -31,10 +33,11 @@ class _EducationScreenState extends State<EducationScreen> {
   }
 
   Future<void> _loadAttempts() async {
-    final attemptsData = await _educationService.getEducationAttempts(widget.userId);
-
+    final attemptsData = await _educationService.getUserEducationAttempts(
+      widget.userId,
+    );
     setState(() {
-      _attemptsLeft = attemptsData['maxAttempts']! - attemptsData['attemptsUsed']!;
+      _attemptsLeft = attemptsData.isNotEmpty ? 3 - attemptsData.length : 3;
       _loadingAttempts = false;
     });
   }
@@ -43,99 +46,91 @@ class _EducationScreenState extends State<EducationScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Образовательные миссии'),
-        centerTitle: true,
-      ),
-      body: _loadingAttempts
-          ? Center(child: CircularProgressIndicator())
-          : SingleChildScrollView(
-        child: Column(
-          children: [
-            MascotWidget(
-              message: 'Инициализация модуля знаний... Обнаружено 2 направления: '
-                  '[Офицерский состав] и [Молодые рекруты]...\n\n'
-                  'Здравствуй, юнит! Добро пожаловать в блок "Образовательные миссии". '
-                  'Компания Neoflex не только разрабатывает цифровые решения, но и проводит '
-                  'различные просветительские программы. Давай познакомимся с ними ближе.\n\n'
-                  'Предупреждение! Системное уведомление: Обнаружена ошибка категоризации…\n\n'
-                  'Перед тобой – образовательные модули Neoflex. Но произошел... небольшой '
-                  'системный сбой. База данных подверглась несанкционированному перемешиванию. '
-                  'Все курсы были экстренно помещены в карантинную зону, твоя задача – '
-                  'проанализировать описания и отсортировать модули по контейнерам. Помоги '
-                  'восстановить порядок в академической вселенной.\n\n'
-                  'Рекомендация: для успешного прохождения испытания необходимо перенести модули '
-                  'в соответствующий им контейнер: синий сектор для программ, созданных для '
-                  'студентов и молодых специалистов, зеленый – инициативы для детей.\n\n'
-                  'Осталось попыток: $_attemptsLeft\n\n'
-                  'Ожидание действий юнита для начала калибровки…',
-            ),
-            Padding(
-              padding: const EdgeInsets.all(16.0),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    'Описание задания:',
-                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-                  ),
-                  SizedBox(height: 8),
-                  Text(
-                    'Вам необходимо правильно распределить образовательные программы по двум '
-                        'категориям: для детей (школьников) и для взрослых (студентов и специалистов). '
-                        'Для этого прочитайте описание каждой программы и перетащите её в '
-                        'соответствующий контейнер.',
-                    style: TextStyle(fontSize: 16),
-                  ),
-                  SizedBox(height: 24),
-                  Center(
-                    child: ElevatedButton(
-                      onPressed: _attemptsLeft > 0
-                          ? () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (context) => EducationGameScreen(
-                              userId: widget.userId,
-                              onUpdate: () {
-                                widget.onUpdate();
-                                _loadAttempts();
-                              },
-                            ),
-                          ),
-                        );
-                      }
-                          : null,
-                      child: Padding(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 32.0,
-                          vertical: 16.0,
-                        ),
-                        child: Text(
-                          _attemptsLeft > 0 ? 'Начать задание' : 'Попытки исчерпаны',
-                          style: TextStyle(fontSize: 18),
-                        ),
-                      ),
-                    ),
-                  ),
-                  if (_attemptsLeft <= 0)
-                    Padding(
-                      padding: const EdgeInsets.only(top: 16.0),
-                      child: Text(
-                        'Вы использовали все доступные попытки',
-                        style: TextStyle(
-                          fontSize: 16,
-                          color: Colors.red,
-                          fontWeight: FontWeight.bold,
-                        ),
-                        textAlign: TextAlign.center,
-                      ),
-                    ),
-                ],
-              ),
-            ),
-          ],
+        elevation: 0,
+        scrolledUnderElevation: 0,
+        title: Text(
+          'Образовательные миссии'.toUpperCase(),
+          style: const TextStyle(
+            fontSize: 25,
+            color: AppColors.pink,
+            fontWeight: FontWeight.bold,
+            letterSpacing: -1.8,
+          ),
+        ),
+        leading: IconButton(
+          icon: Icon(Icons.arrow_back, color: AppColors.pink, size: 30),
+          onPressed: () => Navigator.pop(context),
         ),
       ),
+      body:
+          _loadingAttempts
+              ? Center(child: CircularProgressIndicator())
+              : Center(
+                child: ScrollConfiguration(
+                  behavior: ScrollConfiguration.of(
+                    context,
+                  ).copyWith(scrollbars: false),
+                  child: SingleChildScrollView(
+                    child: Column(
+                      children: [
+                        SmallMascotWidget(
+                          message:
+                              '${AppStrings.educationDescription}Осталось попыток: $_attemptsLeft',
+                          imagePath: 'assets/images/education.png',
+                        ),
+                        SizedBox(height: 20),
+                        if (_attemptsLeft > 0)
+                          ElevatedButton(
+                            onPressed: () {
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder:
+                                      (context) => EducationGameScreen(
+                                        userId: widget.userId,
+                                        onUpdate: () {
+                                          widget.onUpdate();
+                                          _loadAttempts();
+                                        },
+                                      ),
+                                ),
+                              );
+                            },
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: AppColors.pink,
+                              side: BorderSide(color: AppColors.pink, width: 2),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(15),
+                              ),
+                              padding: EdgeInsets.symmetric(
+                                horizontal: 15,
+                                vertical: 12,
+                              ),
+                            ),
+                            child: Text(
+                              'Начать задание',
+                              style: TextStyle(
+                                fontSize: 18,
+                                color: AppColors.white,
+                              ),
+                            ),
+                          ),
+                        if (_attemptsLeft <= 0)
+                          Text(
+                            'Вы использовали все доступные попытки',
+                            style: TextStyle(
+                              fontSize: 18,
+                              color: AppColors.deepPinkPurple,
+                              fontWeight: FontWeight.bold,
+                            ),
+                            textAlign: TextAlign.center,
+                          ),
+                        SizedBox(height: 25),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
     );
   }
 }

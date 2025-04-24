@@ -1,10 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:neoflex_quest/core/models/education_item.dart';
-import 'package:neoflex_quest/core/services/data_service.dart';
-import 'package:neoflex_quest/shared/widgets/mascot_widget.dart';
-
-import '../../../../core/database/database_service.dart';
-import '../../../../core/services/education_service.dart';
+import 'package:neoflex_quest/core/services/education_service.dart';
 
 class EducationGameScreen extends StatefulWidget {
   final int userId;
@@ -49,18 +45,18 @@ class _EducationGameScreenState extends State<EducationGameScreen> {
   }
 
   Future<void> _loadAttempts() async {
-    final attemptsData = await _educationService.getEducationAttempts(widget.userId);
-
+    final attemptsData = await _educationService.getUserEducationAttempts(
+      widget.userId,
+    );
     setState(() {
-      _attemptsLeft = attemptsData['maxAttempts']! - attemptsData['attemptsUsed']!;
-      _attemptsExceeded = attemptsData['maxAttempts']! <= attemptsData['attemptsUsed']!;
+      _attemptsLeft = attemptsData.isNotEmpty ? 3 - attemptsData.length : 3;
+      _attemptsExceeded = 3 <= (attemptsData.isNotEmpty ? attemptsData.length : 0);
     });
   }
 
   Future<void> _incrementAttempts() async {
     try {
-      await EducationService().incrementAttempts(widget.userId);
-
+      await _educationService.incrementAttempts(widget.userId);
       setState(() {
         _attemptsLeft--;
         _attemptsExceeded = _attemptsLeft <= 0;
@@ -74,16 +70,16 @@ class _EducationGameScreenState extends State<EducationGameScreen> {
 
   Future<void> _saveUserAnswers() async {
     try {
-      await EducationService().saveUserAnswers(
+      await _educationService.saveUserAnswers(
         userId: widget.userId,
         topContainer: _topContainer,
         bottomContainer: _bottomContainer,
       );
-      widget.onUpdate(); // Обновляем данные пользователя
+      widget.onUpdate();
     } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Ошибка сохранения: $e')),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text('Ошибка сохранения: $e')));
     }
   }
 
@@ -131,30 +127,38 @@ class _EducationGameScreenState extends State<EducationGameScreen> {
 
     setState(() => _isChecking = false);
 
-    final correct = _topContainer.where((item) => item.correctCategory == 'children').length +
-        _bottomContainer.where((item) => item.correctCategory == 'adults').length;
+    final correct =
+        _topContainer
+            .where((item) => item.correctCategory == 'children')
+            .length +
+        _bottomContainer
+            .where((item) => item.correctCategory == 'adults')
+            .length;
     final total = _topContainer.length + _bottomContainer.length;
 
     showDialog(
       context: context,
       barrierDismissible: false,
-      builder: (context) => AlertDialog(
-        title: Text('Результаты'),
-        content: Text('Вы правильно отсортировали $correct из $total элементов.\n\n'
-            'Начислено ${correct * 2} мандаринок.\n\n'
-            'Осталось попыток: $_attemptsLeft'),
-        actions: [
-          TextButton(
-            onPressed: () {
-              Navigator.pop(context);
-              if (_attemptsLeft <= 0) {
-                Navigator.pop(context);
-              }
-            },
-            child: Text('OK'),
+      builder:
+          (context) => AlertDialog(
+            title: Text('Результаты'),
+            content: Text(
+              'Вы правильно отсортировали $correct из $total элементов.\n\n'
+              'Начислено ${correct * 2} мандаринок.\n\n'
+              'Осталось попыток: $_attemptsLeft',
+            ),
+            actions: [
+              TextButton(
+                onPressed: () {
+                  Navigator.pop(context);
+                  if (_attemptsLeft <= 0) {
+                    Navigator.pop(context);
+                  }
+                },
+                child: Text('OK'),
+              ),
+            ],
           ),
-        ],
-      ),
     );
   }
 
@@ -166,156 +170,183 @@ class _EducationGameScreenState extends State<EducationGameScreen> {
         actions: [
           IconButton(
             icon: Icon(Icons.help),
-            onPressed: () => showDialog(
-              context: context,
-              builder: (context) => AlertDialog(
-                title: Text('Помощь'),
-                content: Text('Перетащите элементы в соответствующие контейнеры:\n\n'
-                    '🔵 Синий - программы для детей\n'
-                    '🟢 Зеленый - программы для взрослых\n\n'
-                    'Осталось попыток: $_attemptsLeft'),
-                actions: [
-                  TextButton(
-                    onPressed: () => Navigator.pop(context),
-                    child: Text('Понятно'),
-                  ),
-                ],
-              ),
-            ),
+            onPressed:
+                () => showDialog(
+                  context: context,
+                  builder:
+                      (context) => AlertDialog(
+                        title: Text('Помощь'),
+                        content: Text(
+                          'Перетащите элементы в соответствующие контейнеры:\n\n'
+                          '🔵 Синий - программы для детей\n'
+                          '🟢 Зеленый - программы для взрослых\n\n'
+                          'Осталось попыток: $_attemptsLeft',
+                        ),
+                        actions: [
+                          TextButton(
+                            onPressed: () => Navigator.pop(context),
+                            child: Text('Понятно'),
+                          ),
+                        ],
+                      ),
+                ),
           ),
         ],
       ),
-      body: _attemptsExceeded
-          ? Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Text(
-              'Вы исчерпали все попытки',
-              style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
-            ),
-            SizedBox(height: 16),
-            Text('Максимальное количество попыток: 3'),
-            SizedBox(height: 24),
-            ElevatedButton(
-              onPressed: () => Navigator.pop(context),
-              child: Text('Вернуться назад'),
-            ),
-          ],
-        ),
-      )
-          : FutureBuilder<List<EducationItem>>(
-        future: _itemsFuture,
-        builder: (context, snapshot) {
-          if (snapshot.connectionState == ConnectionState.waiting) {
-            return Center(child: CircularProgressIndicator());
-          }
-
-          if (snapshot.hasError) {
-            return Center(child: Text('Ошибка загрузки данных'));
-          }
-
-          if (_leftItems.isEmpty && _topContainer.isEmpty && _bottomContainer.isEmpty) {
-            _leftItems = List.from(snapshot.data!);
-          }
-
-          return Column(
-            children: [
-              Expanded(
-                child: Row(
+      body:
+          _attemptsExceeded
+              ? Center(
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                  Expanded(
-                  flex: 3,
-                  child: Container(
-                    padding: EdgeInsets.all(8),
-                    color: Colors.grey[100],
-                    child: ListView.builder(
-                      itemCount: _leftItems.length,
-                      itemBuilder: (context, index) => _buildDraggableItem(_leftItems[index]),
-                    ),
-                  )),
-                  // Центральный блок с описанием
-                  Expanded(
-                    flex: 4, // Сделал немного уже
-                    child: Container(
-                      padding: EdgeInsets.all(16),
-                      decoration: BoxDecoration(
-                        border: Border.symmetric(
-                          vertical: BorderSide(color: Colors.grey),
-                        ),
-                      ),
-                      child: _selectedItem != null
-                          ? SingleChildScrollView(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              _selectedItem!.title,
-                              style: TextStyle(
-                                fontSize: 20,
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
-                            SizedBox(height: 16),
-                            Text(_selectedItem!.fullDescription),
-                          ],
-                        ),
-                      )
-                          : Center(
-                        child: Text(
-                          'Выберите элемент для просмотра описания',
-                          style: TextStyle(color: Colors.grey),
-                        ),
+                    Text(
+                      'Вы исчерпали все попытки',
+                      style: TextStyle(
+                        fontSize: 20,
+                        fontWeight: FontWeight.bold,
                       ),
                     ),
-                  ),
-                  Expanded(
-                    flex: 3,
-                    child: Column(
-                      children: [
-                        Expanded(
-                          child: _buildContainer(
-                            'children',
-                            'Для детей',
-                            Colors.blue[50]!,
-                            Icons.child_care,
-                          ),
-                        ),
-                        Divider(height: 1),
-                        Expanded(
-                          child: _buildContainer(
-                            'adults',
-                            'Для взрослых',
-                            Colors.green[50]!,
-                            Icons.work,
-                          ),
-                        ),
-                      ],
+                    SizedBox(height: 16),
+                    Text('Максимальное количество попыток: 3'),
+                    SizedBox(height: 24),
+                    ElevatedButton(
+                      onPressed: () => Navigator.pop(context),
+                      child: Text('Вернуться назад'),
                     ),
-                  ),
                   ],
                 ),
+              )
+              : FutureBuilder<List<EducationItem>>(
+                future: _itemsFuture,
+                builder: (context, snapshot) {
+                  if (snapshot.connectionState == ConnectionState.waiting) {
+                    return Center(child: CircularProgressIndicator());
+                  }
+
+                  if (snapshot.hasError) {
+                    return Center(child: Text('Ошибка загрузки данных'));
+                  }
+
+                  if (_leftItems.isEmpty &&
+                      _topContainer.isEmpty &&
+                      _bottomContainer.isEmpty) {
+                    _leftItems = List.from(snapshot.data!);
+                  }
+
+                  return Column(
+                    children: [
+                      Expanded(
+                        child: Row(
+                          children: [
+                            Expanded(
+                              flex: 3,
+                              child: Container(
+                                padding: EdgeInsets.all(8),
+                                color: Colors.grey[100],
+                                child: ListView.builder(
+                                  itemCount: _leftItems.length,
+                                  itemBuilder:
+                                      (context, index) => _buildDraggableItem(
+                                        _leftItems[index],
+                                      ),
+                                ),
+                              ),
+                            ),
+                            // Центральный блок с описанием
+                            Expanded(
+                              flex: 4, // Сделал немного уже
+                              child: Container(
+                                padding: EdgeInsets.all(16),
+                                decoration: BoxDecoration(
+                                  border: Border.symmetric(
+                                    vertical: BorderSide(color: Colors.grey),
+                                  ),
+                                ),
+                                child:
+                                    _selectedItem != null
+                                        ? SingleChildScrollView(
+                                          child: Column(
+                                            crossAxisAlignment:
+                                                CrossAxisAlignment.start,
+                                            children: [
+                                              Text(
+                                                _selectedItem!.title,
+                                                style: TextStyle(
+                                                  fontSize: 20,
+                                                  fontWeight: FontWeight.bold,
+                                                ),
+                                              ),
+                                              SizedBox(height: 16),
+                                              Text(
+                                                _selectedItem!.fullDescription,
+                                              ),
+                                            ],
+                                          ),
+                                        )
+                                        : Center(
+                                          child: Text(
+                                            'Выберите элемент для просмотра описания',
+                                            style: TextStyle(
+                                              color: Colors.grey,
+                                            ),
+                                          ),
+                                        ),
+                              ),
+                            ),
+                            Expanded(
+                              flex: 3,
+                              child: Column(
+                                children: [
+                                  Expanded(
+                                    child: _buildContainer(
+                                      'children',
+                                      'Для детей',
+                                      Colors.blue[50]!,
+                                      Icons.child_care,
+                                    ),
+                                  ),
+                                  Divider(height: 1),
+                                  Expanded(
+                                    child: _buildContainer(
+                                      'adults',
+                                      'Для взрослых',
+                                      Colors.green[50]!,
+                                      Icons.work,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      Padding(
+                        padding: const EdgeInsets.all(16.0),
+                        child: SizedBox(
+                          width: double.infinity,
+                          child: ElevatedButton(
+                            onPressed:
+                                (_topContainer.isEmpty &&
+                                            _bottomContainer.isEmpty) ||
+                                        _isChecking ||
+                                        _attemptsExceeded
+                                    ? null
+                                    : _checkAnswers,
+                            child:
+                                _isChecking
+                                    ? CircularProgressIndicator(
+                                      color: Colors.white,
+                                    )
+                                    : Text(
+                                      'Проверить (Осталось попыток: $_attemptsLeft)',
+                                    ),
+                          ),
+                        ),
+                      ),
+                    ],
+                  );
+                },
               ),
-              Padding(
-                padding: const EdgeInsets.all(16.0),
-                child: SizedBox(
-                  width: double.infinity,
-                  child: ElevatedButton(
-                    onPressed: (_topContainer.isEmpty && _bottomContainer.isEmpty) ||
-                        _isChecking ||
-                        _attemptsExceeded
-                        ? null
-                        : _checkAnswers,
-                    child: _isChecking
-                        ? CircularProgressIndicator(color: Colors.white)
-                        : Text('Проверить (Осталось попыток: $_attemptsLeft)'),
-                  ),
-                ),
-              ),
-            ],
-          );
-        },
-      ),
     );
   }
 
@@ -340,16 +371,10 @@ class _EducationGameScreenState extends State<EducationGameScreen> {
                 ),
               ],
             ),
-            child: Text(
-              item.title,
-              style: TextStyle(fontSize: 12),
-            ),
+            child: Text(item.title, style: TextStyle(fontSize: 12)),
           ),
         ),
-        childWhenDragging: Opacity(
-          opacity: 0.4,
-          child: _buildItemCard(item),
-        ),
+        childWhenDragging: Opacity(opacity: 0.4, child: _buildItemCard(item)),
         onDragStarted: () => _onItemSelected(item),
         child: _buildItemCard(item),
       ),
@@ -379,7 +404,12 @@ class _EducationGameScreenState extends State<EducationGameScreen> {
     );
   }
 
-  Widget _buildContainer(String category, String title, Color color, IconData icon) {
+  Widget _buildContainer(
+    String category,
+    String title,
+    Color color,
+    IconData icon,
+  ) {
     final items = category == 'children' ? _topContainer : _bottomContainer;
 
     return DragTarget<EducationItem>(
@@ -389,92 +419,99 @@ class _EducationGameScreenState extends State<EducationGameScreen> {
           decoration: BoxDecoration(
             color: color,
             borderRadius: BorderRadius.circular(8),
-            border: candidateData.isNotEmpty
-                ? Border.all(color: Colors.blue, width: 2)
-                : null,
+            border:
+                candidateData.isNotEmpty
+                    ? Border.all(color: Colors.blue, width: 2)
+                    : null,
           ),
           child: Column(
-              children: [
-          Container(
-          padding: EdgeInsets.symmetric(vertical: 8, horizontal: 4),
-          decoration: BoxDecoration(
-            border: Border(bottom: BorderSide(color: Colors.grey[300]!)),),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Icon(icon, size: 16),
-                SizedBox(width: 4),
-                Flexible(
-                  child: Text(
-                    title,
-                    style: TextStyle(
-                      fontWeight: FontWeight.bold,
-                      fontSize: 12,
-                    ),
-                    textAlign: TextAlign.center,
-                    overflow: TextOverflow.visible,
-                    maxLines: 2,
-                  ),
+            children: [
+              Container(
+                padding: EdgeInsets.symmetric(vertical: 8, horizontal: 4),
+                decoration: BoxDecoration(
+                  border: Border(bottom: BorderSide(color: Colors.grey[300]!)),
                 ),
-              ],
-            ),
-          ),
-          Expanded(
-            child: items.isEmpty
-                ? Center(
-              child: Text(
-                'Перетащите сюда',
-                style: TextStyle(color: Colors.grey, fontSize: 12),
-              ),
-            )
-                : ReorderableListView.builder(
-              itemCount: items.length,
-              itemBuilder: (context, index) {
-                final item = items[index];
-                return Padding(
-                  key: ValueKey('${item.id}_$category'),
-                  padding: const EdgeInsets.symmetric(vertical: 4.0),
-                  child: Dismissible(
-                    key: Key('${item.id}_$category'),
-                    direction: DismissDirection.endToStart,
-                    background: Container(
-                      color: Colors.red[100],
-                      alignment: Alignment.centerRight,
-                      padding: EdgeInsets.only(right: 20),
-                      child: Icon(Icons.delete, color: Colors.red),
-                    ),
-                    onDismissed: (direction) => _removeFromContainer(item, category),
-                    child: InkWell(
-                      onTap: () => _onItemSelected(item),
-                      borderRadius: BorderRadius.circular(8),
-                      child: Container(
-                        padding: EdgeInsets.all(8),
-                        decoration: BoxDecoration(
-                          color: Colors.white,
-                          borderRadius: BorderRadius.circular(8),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Icon(icon, size: 16),
+                    SizedBox(width: 4),
+                    Flexible(
+                      child: Text(
+                        title,
+                        style: TextStyle(
+                          fontWeight: FontWeight.bold,
+                          fontSize: 12,
                         ),
-                        child: Text(
-                          item.title,
-                          style: TextStyle(fontSize: 12),
-                          overflow: TextOverflow.ellipsis,
-                          maxLines: 2,
-                        ),
+                        textAlign: TextAlign.center,
+                        overflow: TextOverflow.visible,
+                        maxLines: 2,
                       ),
                     ),
-                  ),
-                );
-              },
-              onReorder: (oldIndex, newIndex) {
-                setState(() {
-                  if (oldIndex < newIndex) newIndex--;
-                  final item = items.removeAt(oldIndex);
-                  items.insert(newIndex, item);
-                });
-              },
-            ),
+                  ],
+                ),
+              ),
+              Expanded(
+                child:
+                    items.isEmpty
+                        ? Center(
+                          child: Text(
+                            'Перетащите сюда',
+                            style: TextStyle(color: Colors.grey, fontSize: 12),
+                          ),
+                        )
+                        : ReorderableListView.builder(
+                          itemCount: items.length,
+                          itemBuilder: (context, index) {
+                            final item = items[index];
+                            return Padding(
+                              key: ValueKey('${item.id}_$category'),
+                              padding: const EdgeInsets.symmetric(
+                                vertical: 4.0,
+                              ),
+                              child: Dismissible(
+                                key: Key('${item.id}_$category'),
+                                direction: DismissDirection.endToStart,
+                                background: Container(
+                                  color: Colors.red[100],
+                                  alignment: Alignment.centerRight,
+                                  padding: EdgeInsets.only(right: 20),
+                                  child: Icon(Icons.delete, color: Colors.red),
+                                ),
+                                onDismissed:
+                                    (direction) =>
+                                        _removeFromContainer(item, category),
+                                child: InkWell(
+                                  onTap: () => _onItemSelected(item),
+                                  borderRadius: BorderRadius.circular(8),
+                                  child: Container(
+                                    padding: EdgeInsets.all(8),
+                                    decoration: BoxDecoration(
+                                      color: Colors.white,
+                                      borderRadius: BorderRadius.circular(8),
+                                    ),
+                                    child: Text(
+                                      item.title,
+                                      style: TextStyle(fontSize: 12),
+                                      overflow: TextOverflow.ellipsis,
+                                      maxLines: 2,
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            );
+                          },
+                          onReorder: (oldIndex, newIndex) {
+                            setState(() {
+                              if (oldIndex < newIndex) newIndex--;
+                              final item = items.removeAt(oldIndex);
+                              items.insert(newIndex, item);
+                            });
+                          },
+                        ),
+              ),
+            ],
           ),
-          ],
-        ),
         );
       },
       onWillAccept: (data) => true,
