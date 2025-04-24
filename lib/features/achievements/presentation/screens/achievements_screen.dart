@@ -35,7 +35,6 @@ class _AchievementsScreenState extends State<AchievementsScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      // Убрали appBar полностью
       body: FutureBuilder(
         future: Future.wait([_achievementsFuture, _userAchievementsFuture]),
         builder: (context, AsyncSnapshot<List<dynamic>> snapshot) {

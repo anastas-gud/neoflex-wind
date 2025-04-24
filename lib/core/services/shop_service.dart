@@ -1,155 +1,73 @@
+import 'dart:convert';
+
+import 'package:http/http.dart' as http;
 import 'package:neoflex_quest/core/models/shop_item.dart';
 import 'package:neoflex_quest/core/services/data_service.dart';
 
+import '../constants/strings.dart';
 import '../database/database_service.dart';
 
 class ShopService {
-  final DatabaseService _databaseService;
-
-  ShopService({required DatabaseService databaseService})
-      : _databaseService = databaseService;
-
   // Получаем все товары в магазине
   Future<List<ShopItem>> getShopItems() async {
-    final conn = await _databaseService.getConnection();
-    try {
-      final results = await conn.query(
-        'SELECT id, name, description, price, stock, image_path FROM shop_items WHERE stock > 0 OR stock IS NULL',
-      );
+    final response = await http.get(
+      Uri.parse('${AppStrings.baseUrl}/shop/items'),
+      headers: {'Accept': 'application/json'},
+    );
 
-      return results.map((row) => ShopItem(
-        id: row[0] as int,
-        name: row[1] as String,
-        description: row[2] as String,
-        price: row[3] as int,
-        stock: row[4] as int?,
-        imagePath: row[5] as String,
-      )).toList();
-    } finally {
-      await conn.close();
+    if (response.statusCode == 200) {
+      final List<dynamic> data = jsonDecode(response.body);
+      return data.map((item) => ShopItem.fromJson(item)).toList();
+    } else {
+      throw Exception('Failed to load shop items: ${response.statusCode}');
     }
   }
+
+  final http.Client _client;
+
+  ShopService({http.Client? client}) : _client = client ?? http.Client();
 
   // Покупка товара
-  Future<bool> purchaseItem(int userId, int itemId) async {
-    final conn = await _databaseService.getConnection();
-    try {
-      await conn.transaction((ctx) async {
-        // Проверяем наличие товара
-        final stock = await ctx.query(
-          'SELECT stock, price FROM shop_items WHERE id = @itemId FOR UPDATE',
-          substitutionValues: {'itemId': itemId},
-        );
+  Future<Map<String, dynamic>> purchaseItem(int userId, int itemId) async {
+    final response = await _client.post(
+      Uri.parse('${AppStrings.baseUrl}/shop/purchases'),
+      headers: {'Content-Type': 'application/json'},
+      body: jsonEncode({
+        'userId': userId,
+        'itemId': itemId,
+      }),
+    );
 
-        if (stock.isEmpty) {
-          throw Exception('Товар не найден');
-        }
-
-        final currentStock = stock[0][0] as int?;
-        final price = stock[0][1] as int;
-
-        if (currentStock != null && currentStock <= 0) {
-          throw Exception('Товар закончился');
-        }
-
-        // Проверяем баланс пользователя
-        final userBalance = await ctx.query(
-          'SELECT points FROM users WHERE id = @userId FOR UPDATE',
-          substitutionValues: {'userId': userId},
-        );
-
-        if (userBalance.isEmpty || (userBalance[0][0] as int) < price) {
-          throw Exception('Недостаточно мандаринок');
-        }
-
-        // Уменьшаем количество товара (если не null)
-        if (currentStock != null) {
-          await ctx.query(
-            'UPDATE shop_items SET stock = stock - 1 WHERE id = @itemId',
-            substitutionValues: {'itemId': itemId},
-          );
-        }
-
-        // Списание средств
-        await ctx.query(
-          'UPDATE users SET points = points - @price WHERE id = @userId',
-          substitutionValues: {
-            'userId': userId,
-            'price': price,
-          },
-        );
-
-        // Создаем запись о покупке
-        await ctx.query(
-          'INSERT INTO purchases (user_id, item_id) VALUES (@userId, @itemId)',
-          substitutionValues: {
-            'userId': userId,
-            'itemId': itemId,
-          },
-        );
-      });
-      return true;
-    } catch (e) {
-      print('Purchase error: $e');
-      throw Exception('Ошибка при покупке: ${e.toString()}');
-    } finally {
-      await conn.close();
+    if (response.statusCode == 201) {
+      return jsonDecode(response.body);
+    } else {
+      throw Exception(jsonDecode(response.body)['message'] ?? 'Purchase failed');
     }
   }
 
-  // Получаем историю покупок пользователя
-  Future<List<ShopItem>> getPurchaseHistory(int userId) async {
-    final conn = await _databaseService.getConnection();
-    try {
-      final results = await conn.query(
-        '''SELECT si.id, si.name, si.description, si.price, si.image_path, p.purchased_at 
-           FROM purchases p
-           JOIN shop_items si ON p.item_id = si.id
-           WHERE p.user_id = @userId
-           ORDER BY p.purchased_at DESC''',
-        substitutionValues: {'userId': userId},
-      );
+  Future<List<Map<String, dynamic>>> getPurchaseHistory(int userId) async {
+    final response = await _client.get(
+      Uri.parse('${AppStrings.baseUrl}/shop/purchases?userId=$userId'),
+      headers: {'Accept': 'application/json'},
+    );
 
-      return results.map((row) => ShopItem(
-        id: row[0] as int,
-        name: row[1] as String,
-        description: row[2] as String,
-        price: row[3] as int,
-        imagePath: row[4] as String,
-        // Дополнительное поле для истории
-        purchasedAt: DateTime.parse(row[5] as String),
-      )).toList();
-    } finally {
-      await conn.close();
+    if (response.statusCode == 200) {
+      return List<Map<String, dynamic>>.from(jsonDecode(response.body));
     }
+    throw Exception('Failed to load purchase history');
   }
 
-  // Получаем топ товаров
+  // Популярные товары
   Future<List<ShopItem>> getPopularItems({int limit = 5}) async {
-    final conn = await _databaseService.getConnection();
-    try {
-      final results = await conn.query(
-        '''SELECT si.id, si.name, si.description, si.price, si.stock, si.image_path, COUNT(p.id) as purchases_count
-           FROM shop_items si
-           LEFT JOIN purchases p ON si.id = p.item_id
-           GROUP BY si.id
-           ORDER BY purchases_count DESC
-           LIMIT @limit''',
-        substitutionValues: {'limit': limit},
-      );
+    final response = await _client.get(
+      Uri.parse('${AppStrings.baseUrl}/shop/items/popular?limit=$limit'),
+      headers: {'Accept': 'application/json'},
+    );
 
-      return results.map((row) => ShopItem(
-        id: row[0] as int,
-        name: row[1] as String,
-        description: row[2] as String,
-        price: row[3] as int,
-        stock: row[4] as int?,
-        imagePath: row[5] as String,
-        // Дополнительное поле для популярности
-        popularity: row[6] as int,
-      )).toList();
-    } finally {
-      await conn.close();
+    if (response.statusCode == 200) {
+      final List<dynamic> data = jsonDecode(response.body);
+      return data.map((json) => ShopItem.fromJson(json)).toList();
     }
+    throw Exception('Failed to load popular items: ${response.statusCode}');
   }
 }
