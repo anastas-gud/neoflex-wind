@@ -50,7 +50,7 @@ class _TimeMachineScreenState extends State<TimeMachineScreen> {
   Future<void> _checkAchievements() async {
     try {
       // Проверяем достижение "Аномалия" (все эпохи пройдены)
-      const anomalyAchievementId = 3;
+      const anomalyAchievementId = 4;
 
       // Проверяем, есть ли уже это достижение
       final hasAchievement = await _achievementService.hasAchievement(
