@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:neoflex_quest/core/constants/colors.dart';
 import 'package:neoflex_quest/core/models/education_item.dart';
 import 'package:neoflex_quest/core/services/education_service.dart';
 
@@ -50,7 +51,8 @@ class _EducationGameScreenState extends State<EducationGameScreen> {
     );
     setState(() {
       _attemptsLeft = attemptsData.isNotEmpty ? 3 - attemptsData.length : 3;
-      _attemptsExceeded = 3 <= (attemptsData.isNotEmpty ? attemptsData.length : 0);
+      _attemptsExceeded =
+          3 <= (attemptsData.isNotEmpty ? attemptsData.length : 0);
     });
   }
 
@@ -141,11 +143,15 @@ class _EducationGameScreenState extends State<EducationGameScreen> {
       barrierDismissible: false,
       builder:
           (context) => AlertDialog(
-            title: Text('Результаты'),
+            title: Text(
+              'Результаты'.toUpperCase(),
+              style: TextStyle(color: AppColors.orange),
+            ),
             content: Text(
-              'Вы правильно отсортировали $correct из $total элементов.\n\n'
-              'Начислено ${correct * 2} мандаринок.\n\n'
+              'Вы правильно отсортировали $correct из $total элементов.\n'
+              'Начислено ${correct * 2} мандаринок.\n'
               'Осталось попыток: $_attemptsLeft',
+              style: TextStyle(color: AppColors.purple, fontSize: 16),
             ),
             actions: [
               TextButton(
@@ -155,7 +161,10 @@ class _EducationGameScreenState extends State<EducationGameScreen> {
                     Navigator.pop(context);
                   }
                 },
-                child: Text('OK'),
+                child: Text(
+                  'OK',
+                  style: TextStyle(color: AppColors.softOrange),
+                ),
               ),
             ],
           ),
@@ -166,26 +175,50 @@ class _EducationGameScreenState extends State<EducationGameScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Сортировка программ'),
+        elevation: 0,
+        scrolledUnderElevation: 0,
+        title: Text(
+          'Сортировка модулей'.toUpperCase(),
+          style: const TextStyle(
+            fontSize: 25,
+            color: AppColors.orange,
+            fontWeight: FontWeight.bold,
+            letterSpacing: -1.8,
+          ),
+        ),
+        leading: IconButton(
+          icon: Icon(Icons.arrow_back, color: AppColors.orange, size: 30),
+          onPressed: () => Navigator.pop(context),
+        ),
         actions: [
           IconButton(
-            icon: Icon(Icons.help),
+            icon: Icon(Icons.help, color: AppColors.orange, size: 30),
             onPressed:
                 () => showDialog(
                   context: context,
                   builder:
                       (context) => AlertDialog(
-                        title: Text('Помощь'),
+                        title: Text(
+                          'Помощь'.toUpperCase(),
+                          style: TextStyle(color: AppColors.orange),
+                        ),
                         content: Text(
-                          'Перетащите элементы в соответствующие контейнеры:\n\n'
-                          '🔵 Синий - программы для детей\n'
-                          '🟢 Зеленый - программы для взрослых\n\n'
-                          'Осталось попыток: $_attemptsLeft',
+                          'Сверху предоставлен список из 10 модулей, необходимо определить для каждого из них контейнер.\n'
+                          'Для прочтения описания модуля нажмите на него.\n'
+                          'Для переноса модуля в контейнер: зажмите, дождитесь появления тени, перенесите в нужный контейнер.\n'
+                          'При удаления модуля из контейнера смахните его влево.',
+                          style: TextStyle(
+                            color: AppColors.purple,
+                            fontSize: 16,
+                          ),
                         ),
                         actions: [
                           TextButton(
                             onPressed: () => Navigator.pop(context),
-                            child: Text('Понятно'),
+                            child: Text(
+                              'Понятно'.toUpperCase(),
+                              style: TextStyle(color: AppColors.softOrange),
+                            ),
                           ),
                         ],
                       ),
@@ -204,14 +237,28 @@ class _EducationGameScreenState extends State<EducationGameScreen> {
                       style: TextStyle(
                         fontSize: 20,
                         fontWeight: FontWeight.bold,
+                        color: AppColors.middlePurple,
                       ),
                     ),
-                    SizedBox(height: 16),
-                    Text('Максимальное количество попыток: 3'),
-                    SizedBox(height: 24),
+                    SizedBox(height: 15),
+                    Text(
+                      'Максимальное количество попыток: 3',
+                      style: TextStyle(
+                        fontSize: 16,
+                        color: AppColors.lightPurple,
+                      ),
+                    ),
+                    SizedBox(height: 25),
                     ElevatedButton(
                       onPressed: () => Navigator.pop(context),
-                      child: Text('Вернуться назад'),
+                      child: Text(
+                        'Вернуться назад'.toUpperCase(),
+                        style: TextStyle(
+                          fontSize: 20,
+                          fontWeight: FontWeight.bold,
+                          color: AppColors.middlePurple,
+                        ),
+                      ),
                     ),
                   ],
                 ),
@@ -236,58 +283,77 @@ class _EducationGameScreenState extends State<EducationGameScreen> {
                   return Column(
                     children: [
                       Expanded(
-                        child: Row(
+                        child: Column(
                           children: [
                             Expanded(
-                              flex: 3,
+                              flex: 4,
+                              // Список модулей
                               child: Container(
-                                padding: EdgeInsets.all(8),
-                                color: Colors.grey[100],
-                                child: ListView.builder(
-                                  itemCount: _leftItems.length,
-                                  itemBuilder:
-                                      (context, index) => _buildDraggableItem(
-                                        _leftItems[index],
-                                      ),
+                                padding: EdgeInsets.all(10),
+                                color: AppColors.lightLavender,
+                                child: ScrollConfiguration(
+                                  behavior: ScrollConfiguration.of(
+                                    context,
+                                  ).copyWith(scrollbars: false),
+                                  child: ListView.builder(
+                                    itemCount: _leftItems.length,
+                                    itemBuilder:
+                                        (context, index) => _buildDraggableItem(
+                                          _leftItems[index],
+                                        ),
+                                  ),
                                 ),
                               ),
                             ),
                             // Центральный блок с описанием
                             Expanded(
-                              flex: 4, // Сделал немного уже
+                              flex: 3,
                               child: Container(
-                                padding: EdgeInsets.all(16),
+                                padding: EdgeInsets.all(15),
                                 decoration: BoxDecoration(
                                   border: Border.symmetric(
-                                    vertical: BorderSide(color: Colors.grey),
+                                    vertical: BorderSide(
+                                      color: Colors.transparent,
+                                    ),
                                   ),
                                 ),
                                 child:
                                     _selectedItem != null
-                                        ? SingleChildScrollView(
-                                          child: Column(
-                                            crossAxisAlignment:
-                                                CrossAxisAlignment.start,
-                                            children: [
-                                              Text(
-                                                _selectedItem!.title,
-                                                style: TextStyle(
-                                                  fontSize: 20,
-                                                  fontWeight: FontWeight.bold,
+                                        ? ScrollConfiguration(
+                                          behavior: ScrollConfiguration.of(
+                                            context,
+                                          ).copyWith(scrollbars: false),
+                                          child: SingleChildScrollView(
+                                            child: Column(
+                                              crossAxisAlignment:
+                                                  CrossAxisAlignment.start,
+                                              children: [
+                                                Text(
+                                                  'Модуль:\n${_selectedItem!.title}',
+                                                  style: TextStyle(
+                                                    fontSize: 18,
+                                                    fontWeight: FontWeight.bold,
+                                                    color: AppColors.softOrange,
+                                                  ),
                                                 ),
-                                              ),
-                                              SizedBox(height: 16),
-                                              Text(
-                                                _selectedItem!.fullDescription,
-                                              ),
-                                            ],
+                                                SizedBox(height: 5),
+                                                Text(
+                                                  'Описание:\n${_selectedItem!.fullDescription}',
+                                                  style: TextStyle(
+                                                    fontSize: 15,
+                                                    color: AppColors.darkPurple,
+                                                  ),
+                                                ),
+                                              ],
+                                            ),
                                           ),
                                         )
                                         : Center(
                                           child: Text(
-                                            'Выберите элемент для просмотра описания',
+                                            'Выберите модуль для просмотра описания',
                                             style: TextStyle(
-                                              color: Colors.grey,
+                                              fontSize: 14,
+                                              color: AppColors.darkPurple,
                                             ),
                                           ),
                                         ),
@@ -295,25 +361,27 @@ class _EducationGameScreenState extends State<EducationGameScreen> {
                             ),
                             Expanded(
                               flex: 3,
-                              child: Column(
+                              child: Row(
                                 children: [
+                                  SizedBox(width: 10),
                                   Expanded(
                                     child: _buildContainer(
                                       'children',
                                       'Для детей',
-                                      Colors.blue[50]!,
+                                      AppColors.pink.withOpacity(0.15),
                                       Icons.child_care,
                                     ),
                                   ),
-                                  Divider(height: 1),
+                                  SizedBox(width: 10),
                                   Expanded(
                                     child: _buildContainer(
                                       'adults',
                                       'Для взрослых',
-                                      Colors.green[50]!,
+                                      AppColors.blue.withOpacity(0.15),
                                       Icons.work,
                                     ),
                                   ),
+                                  SizedBox(width: 10),
                                 ],
                               ),
                             ),
@@ -321,10 +389,25 @@ class _EducationGameScreenState extends State<EducationGameScreen> {
                         ),
                       ),
                       Padding(
-                        padding: const EdgeInsets.all(16.0),
+                        padding: const EdgeInsets.all(15.0),
                         child: SizedBox(
                           width: double.infinity,
                           child: ElevatedButton(
+                            style: ElevatedButton.styleFrom(
+                              foregroundColor: AppColors.orange,
+                              backgroundColor: AppColors.white,
+                              side: BorderSide(
+                                color: AppColors.orange,
+                                width: 2.5,
+                              ),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(8),
+                              ),
+                              padding: EdgeInsets.symmetric(
+                                horizontal: 20,
+                                vertical: 15,
+                              ),
+                            ),
                             onPressed:
                                 (_topContainer.isEmpty &&
                                             _bottomContainer.isEmpty) ||
@@ -339,6 +422,11 @@ class _EducationGameScreenState extends State<EducationGameScreen> {
                                     )
                                     : Text(
                                       'Проверить (Осталось попыток: $_attemptsLeft)',
+                                      style: TextStyle(
+                                        fontSize: 16,
+                                        fontWeight: FontWeight.w600,
+                                        color: AppColors.orange,
+                                      ),
                                     ),
                           ),
                         ),
@@ -352,26 +440,30 @@ class _EducationGameScreenState extends State<EducationGameScreen> {
 
   Widget _buildDraggableItem(EducationItem item) {
     return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 4.0),
-      child: LongPressDraggable<EducationItem>(
+      padding: const EdgeInsets.symmetric(vertical: 5),
+      child: Draggable<EducationItem>(
         data: item,
         feedback: Material(
           elevation: 4,
           child: Container(
             width: MediaQuery.of(context).size.width * 0.25,
-            padding: EdgeInsets.all(12),
+            padding: EdgeInsets.all(10),
             decoration: BoxDecoration(
               color: Colors.white,
               borderRadius: BorderRadius.circular(8),
               boxShadow: [
                 BoxShadow(
-                  color: Colors.black26,
+                  color: AppColors.softLavender,
                   blurRadius: 4,
                   offset: Offset(0, 2),
                 ),
               ],
             ),
-            child: Text(item.title, style: TextStyle(fontSize: 12)),
+            child: Text(
+              item.title,
+              style: TextStyle(fontSize: 12),
+              softWrap: true,
+            ),
           ),
         ),
         childWhenDragging: Opacity(opacity: 0.4, child: _buildItemCard(item)),
@@ -386,18 +478,25 @@ class _EducationGameScreenState extends State<EducationGameScreen> {
       onTap: () => _onItemSelected(item),
       borderRadius: BorderRadius.circular(8),
       child: Container(
-        padding: EdgeInsets.all(12),
+        padding: EdgeInsets.all(10),
         decoration: BoxDecoration(
-          color: _selectedItem == item ? Colors.orange[200] : Colors.white,
+          color:
+              _selectedItem == item
+                  ? AppColors.softOrange.withOpacity(0.75)
+                  : AppColors.white,
           borderRadius: BorderRadius.circular(8),
-          border: Border.all(
-            color: _selectedItem == item ? Colors.orange : Colors.grey[300]!,
-          ),
         ),
         child: Text(
           item.title,
-          style: TextStyle(fontSize: 12),
+          style: TextStyle(
+            fontSize: 14,
+            color:
+                _selectedItem == item
+                    ? AppColors.delicatePink
+                    : AppColors.darkPurple,
+          ),
           overflow: TextOverflow.ellipsis,
+          softWrap: true,
           maxLines: 2,
         ),
       ),
@@ -421,7 +520,7 @@ class _EducationGameScreenState extends State<EducationGameScreen> {
             borderRadius: BorderRadius.circular(8),
             border:
                 candidateData.isNotEmpty
-                    ? Border.all(color: Colors.blue, width: 2)
+                    ? Border.all(color: AppColors.softOrange, width: 2)
                     : null,
           ),
           child: Column(
@@ -429,19 +528,20 @@ class _EducationGameScreenState extends State<EducationGameScreen> {
               Container(
                 padding: EdgeInsets.symmetric(vertical: 8, horizontal: 4),
                 decoration: BoxDecoration(
-                  border: Border(bottom: BorderSide(color: Colors.grey[300]!)),
+                  border: Border(bottom: BorderSide(color: Colors.transparent)),
                 ),
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    Icon(icon, size: 16),
+                    Icon(icon, size: 20, color: AppColors.middlePurple),
                     SizedBox(width: 4),
                     Flexible(
                       child: Text(
-                        title,
+                        title.toUpperCase(),
                         style: TextStyle(
+                          color: AppColors.middlePurple,
                           fontWeight: FontWeight.bold,
-                          fontSize: 12,
+                          fontSize: 15,
                         ),
                         textAlign: TextAlign.center,
                         overflow: TextOverflow.visible,
@@ -457,57 +557,73 @@ class _EducationGameScreenState extends State<EducationGameScreen> {
                         ? Center(
                           child: Text(
                             'Перетащите сюда',
-                            style: TextStyle(color: Colors.grey, fontSize: 12),
+                            style: TextStyle(
+                              color: AppColors.darkPurple,
+                              fontSize: 12,
+                            ),
                           ),
                         )
-                        : ReorderableListView.builder(
-                          itemCount: items.length,
-                          itemBuilder: (context, index) {
-                            final item = items[index];
-                            return Padding(
-                              key: ValueKey('${item.id}_$category'),
-                              padding: const EdgeInsets.symmetric(
-                                vertical: 4.0,
-                              ),
-                              child: Dismissible(
-                                key: Key('${item.id}_$category'),
-                                direction: DismissDirection.endToStart,
-                                background: Container(
-                                  color: Colors.red[100],
-                                  alignment: Alignment.centerRight,
-                                  padding: EdgeInsets.only(right: 20),
-                                  child: Icon(Icons.delete, color: Colors.red),
+                        : ScrollConfiguration(
+                          behavior: ScrollConfiguration.of(
+                            context,
+                          ).copyWith(scrollbars: false),
+                          child: ListView.builder(
+                            itemCount: items.length,
+                            itemBuilder: (context, index) {
+                              final item = items[index];
+                              return Padding(
+                                key: ValueKey('${item.id}_$category'),
+                                padding: const EdgeInsets.symmetric(
+                                  vertical: 4.0,
                                 ),
-                                onDismissed:
-                                    (direction) =>
-                                        _removeFromContainer(item, category),
-                                child: InkWell(
-                                  onTap: () => _onItemSelected(item),
-                                  borderRadius: BorderRadius.circular(8),
-                                  child: Container(
-                                    padding: EdgeInsets.all(8),
-                                    decoration: BoxDecoration(
-                                      color: Colors.white,
-                                      borderRadius: BorderRadius.circular(8),
+                                child: Dismissible(
+                                  key: Key('${item.id}_$category'),
+                                  direction: DismissDirection.endToStart,
+                                  background: Container(
+                                    color: AppColors.deepPinkPurple,
+                                    alignment: Alignment.centerRight,
+                                    padding: EdgeInsets.only(right: 20),
+                                    child: Icon(
+                                      Icons.delete,
+                                      color: AppColors.middlePurple,
                                     ),
-                                    child: Text(
-                                      item.title,
-                                      style: TextStyle(fontSize: 12),
-                                      overflow: TextOverflow.ellipsis,
-                                      maxLines: 2,
+                                  ),
+                                  onDismissed:
+                                      (direction) =>
+                                          _removeFromContainer(item, category),
+                                  child: ConstrainedBox(
+                                    constraints: BoxConstraints(
+                                      maxWidth:
+                                          MediaQuery.of(context).size.width,
+                                    ),
+                                    child: InkWell(
+                                      onTap: () => _onItemSelected(item),
+                                      borderRadius: BorderRadius.circular(8),
+                                      child: Container(
+                                        width: double.infinity,
+                                        padding: EdgeInsets.all(8),
+                                        decoration: BoxDecoration(
+                                          color: AppColors.white,
+                                          borderRadius: BorderRadius.circular(
+                                            8,
+                                          ),
+                                        ),
+                                        child: Text(
+                                          item.title,
+                                          style: TextStyle(
+                                            fontSize: 12,
+                                            color: AppColors.darkPurple,
+                                          ),
+                                          overflow: TextOverflow.ellipsis,
+                                          maxLines: 2,
+                                        ),
+                                      ),
                                     ),
                                   ),
                                 ),
-                              ),
-                            );
-                          },
-                          onReorder: (oldIndex, newIndex) {
-                            setState(() {
-                              if (oldIndex < newIndex) newIndex--;
-                              final item = items.removeAt(oldIndex);
-                              items.insert(newIndex, item);
-                            });
-                          },
+                              );
+                            },
+                          ),
                         ),
               ),
             ],

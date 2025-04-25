@@ -21,6 +21,7 @@ class MainMenuScreen extends StatefulWidget {
 class _MainMenuScreenState extends State<MainMenuScreen> {
   late Future<User?> _userFuture;
   int _currentIndex = 0;
+  final _userService = UserService();
 
   @override
   void initState() {
@@ -29,8 +30,7 @@ class _MainMenuScreenState extends State<MainMenuScreen> {
   }
 
   Future<User?> _loadUser() async {
-    final authService = UserService();
-    return await authService.getUserById(widget.userId);
+    return await _userService.getUserById(widget.userId);
   }
 
   Future<void> _refreshUser() async {
@@ -40,8 +40,7 @@ class _MainMenuScreenState extends State<MainMenuScreen> {
   }
 
   void _logout() async {
-    final authService = UserService();
-    await authService.logout();
+    _userService.logout();
     Navigator.pushReplacementNamed(context, '/');
   }
 
@@ -50,7 +49,7 @@ class _MainMenuScreenState extends State<MainMenuScreen> {
     return FutureBuilder<User?>(
       future: _userFuture,
       builder: (context, snapshot) {
-        if (snapshot.connectionState == ConnectionState.waiting) {
+        if (snapshot.connectionState != ConnectionState.done) {
           return Scaffold(body: Center(child: CircularProgressIndicator()));
         }
 
