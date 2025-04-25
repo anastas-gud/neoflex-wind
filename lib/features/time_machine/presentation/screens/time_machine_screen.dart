@@ -1,3 +1,5 @@
+import 'dart:math';
+
 import 'package:flutter/material.dart';
 import 'package:neoflex_quest/core/constants/colors.dart';
 import 'package:neoflex_quest/core/constants/strings.dart';
@@ -108,6 +110,7 @@ class _TimeMachineScreenState extends State<TimeMachineScreen> {
 
   @override
   Widget build(BuildContext context) {
+    double _boxWidth = min(MediaQuery.of(context).size.width * 0.85, 400);
     return Scaffold(
       appBar: AppBar(
         elevation: 0,
@@ -136,6 +139,8 @@ class _TimeMachineScreenState extends State<TimeMachineScreen> {
                 SmallMascotWidget(
                   message: AppStrings.timeMachineDescription,
                   imagePath: 'assets/images/machine.png',
+                  boxWidth: _boxWidth,
+                  shift: 110,
                 ),
                 SizedBox(height: 20),
                 Column(

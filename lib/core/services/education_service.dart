@@ -34,11 +34,9 @@ class EducationService {
 
   Future<void> incrementAttempts(int userId) async {
     final response = await http.post(
-      Uri.parse('${AppStrings.baseUrl}/education/attempts/increment/'),
+      Uri.parse('${AppStrings.baseUrl}/education/attempts/increment/$userId'),
       headers: {'Content-Type': 'application/json; charset=utf-8'},
-      body: jsonEncode({'userId': userId}),
     );
-
     if (response.statusCode != 200) {
       throw Exception('Не удалось зафиксировать попытку');
     }
@@ -65,7 +63,7 @@ class EducationService {
           'isCorrect': answer['isCorrect'],
         }),
       );
-      if (response.statusCode != 200) {
+      if (response.statusCode != 201) {
         throw Exception('Не удалось зафиксировать ответ');
       }
     }

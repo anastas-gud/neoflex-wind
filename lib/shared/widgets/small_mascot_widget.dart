@@ -6,12 +6,14 @@ class SmallMascotWidget extends StatelessWidget {
   final double mascotSize;
   final double boxWidth;
   final String? imagePath;
+  final double? shift;
 
   const SmallMascotWidget({
     required this.message,
-    this.mascotSize = 90,
-    this.boxWidth = 450,
+    this.mascotSize = 150,
+    this.boxWidth = 400,
     this.imagePath,
+    this.shift,
     Key? key,
   }) : super(key: key);
 
@@ -23,10 +25,7 @@ class SmallMascotWidget extends StatelessWidget {
         clipBehavior: Clip.none,
         children: [
           Container(
-            margin: EdgeInsets.only(
-              top: 55,
-              right: 5,
-            ),
+            margin: EdgeInsets.only(top: shift ?? mascotSize * 0.75, right: 5),
             padding: const EdgeInsets.all(15),
             decoration: BoxDecoration(
               color: AppColors.lightLavender,
@@ -55,7 +54,11 @@ class SmallMascotWidget extends StatelessWidget {
               width: mascotSize,
               height: mascotSize,
               errorBuilder:
-                  (_, __, ___) => Icon(Icons.android, size: mascotSize),
+                  (_, __, ___) => Icon(
+                    Icons.android,
+                    size: mascotSize,
+                    color: AppColors.pink,
+                  ),
             ),
           ),
         ],

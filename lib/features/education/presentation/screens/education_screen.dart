@@ -1,3 +1,5 @@
+import 'dart:math';
+
 import 'package:flutter/material.dart';
 import 'package:neoflex_quest/core/constants/colors.dart';
 import 'package:neoflex_quest/core/constants/strings.dart';
@@ -44,6 +46,7 @@ class _EducationScreenState extends State<EducationScreen> {
 
   @override
   Widget build(BuildContext context) {
+    double _boxWidth = min(MediaQuery.of(context).size.width * 0.85, 400);
     return Scaffold(
       appBar: AppBar(
         elevation: 0,
@@ -74,9 +77,26 @@ class _EducationScreenState extends State<EducationScreen> {
                     child: Column(
                       children: [
                         SmallMascotWidget(
-                          message:
-                              '${AppStrings.educationDescription}Осталось попыток: $_attemptsLeft',
-                          imagePath: 'assets/images/education.png',
+                          message: AppStrings.educationDescription,
+                          imagePath: 'assets/images/education_screen.png',
+                          boxWidth: _boxWidth,
+                          shift: 125,
+                        ),
+                        SizedBox(height: 20),
+                        ShaderMask(
+                          blendMode: BlendMode.srcIn,
+                          shaderCallback: (Rect bounds) {
+                            return AppColors.orangeGradient.createShader(
+                              bounds,
+                            );
+                          },
+                          child: Text(
+                            'Осталось попыток: $_attemptsLeft'.toUpperCase(),
+                            style: TextStyle(
+                              fontSize: 22,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
                         ),
                         SizedBox(height: 20),
                         if (_attemptsLeft > 0)
@@ -103,14 +123,14 @@ class _EducationScreenState extends State<EducationScreen> {
                                 borderRadius: BorderRadius.circular(15),
                               ),
                               padding: EdgeInsets.symmetric(
-                                horizontal: 15,
-                                vertical: 12,
+                                horizontal: 18,
+                                vertical: 15,
                               ),
                             ),
                             child: Text(
                               'Начать задание',
                               style: TextStyle(
-                                fontSize: 18,
+                                fontSize: 20,
                                 color: AppColors.white,
                               ),
                             ),
