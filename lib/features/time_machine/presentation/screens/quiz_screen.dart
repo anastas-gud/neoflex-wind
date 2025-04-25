@@ -105,46 +105,45 @@ class _QuizScreenState extends State<QuizScreen> {
     showDialog(
       context: context,
       barrierDismissible: false,
-      builder:
-          (context) => AlertDialog(
-            title: Text(
-              'Тест завершен!'.toUpperCase(),
-              style: TextStyle(color: AppColors.orange),
+      builder: (context) => AlertDialog(
+        title: Text(
+          'Тест завершен!'.toUpperCase(),
+          style: TextStyle(color: AppColors.orange),
+        ),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              'Правильных ответов: $_correctAnswers из $_totalQuestions',
+              style: TextStyle(color: AppColors.purple, fontSize: 16),
             ),
-            content: Column(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  'Правильных ответов: $_correctAnswers из $_totalQuestions',
-                  style: TextStyle(color: AppColors.purple, fontSize: 16),
-                ),
-                SizedBox(height: 8),
-                Text(
-                  'Начислено мандаринок: $_score',
-                  style: TextStyle(color: AppColors.purple, fontSize: 16),
-                ),
-                SizedBox(height: 8),
-                Text(
-                  'Общий баланс: ${widget.user.points + _score}',
-                  style: TextStyle(color: AppColors.purple, fontSize: 16),
-                ),
-              ],
+            SizedBox(height: 8),
+            Text(
+              'Начислено мандаринок: $_score',
+              style: TextStyle(color: AppColors.purple, fontSize: 16),
             ),
-            actions: [
-              TextButton(
-                onPressed: () {
-                  Navigator.of(context).pop();
-                  Navigator.of(context).pop();
-                  widget.onUpdate();
-                },
-                child: Text(
-                  'Вернуться'.toUpperCase(),
-                  style: TextStyle(color: AppColors.softOrange),
-                ),
-              ),
-            ],
+            SizedBox(height: 8),
+            Text(
+              'Общий баланс: ${widget.user.points + _score}',
+              style: TextStyle(color: AppColors.purple, fontSize: 16),
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () {
+              Navigator.of(context).pop();
+              Navigator.of(context).pop();
+              widget.onUpdate();
+            },
+            child: Text(
+              'Вернуться'.toUpperCase(),
+              style: TextStyle(color: AppColors.softOrange),
+            ),
           ),
+        ],
+      ),
     );
   }
 
@@ -182,153 +181,153 @@ class _QuizScreenState extends State<QuizScreen> {
           final questions = snapshot.data!;
           final currentQuestion = questions[_currentQuestionIndex];
 
-          return Column(
-            children: [
-              SizedBox(height: 20),
-              Center(
-                child: Image.asset(
-                  'assets/images/time.png',
-                  height: 150,
-                  width: 150,
-                  errorBuilder:
-                      (_, __, ___) => Icon(
-                        Icons.timer_sharp,
-                        size: 150,
-                        color: AppColors.lightPurple,
+          return ScrollConfiguration(
+              behavior: ScrollConfiguration.of(
+              context,
+            ).copyWith(scrollbars: false),
+            child: SingleChildScrollView(
+              child: ConstrainedBox(
+                constraints: BoxConstraints(
+                  minHeight: MediaQuery.of(context).size.height -
+                      Scaffold.of(context).appBarMaxHeight! -
+                      MediaQuery.of(context).padding.top,
+                ),
+                child: Column(
+                  children: [
+                    SizedBox(height: 20),
+                    Center(
+                      child: Image.asset(
+                        'assets/images/time.png',
+                        height: 150,
+                        width: 150,
+                        errorBuilder: (_, __, ___) => Icon(
+                          Icons.timer_sharp,
+                          size: 150,
+                          color: AppColors.lightPurple,
+                        ),
                       ),
-                ),
-              ),
-              ScrollConfiguration(
-                behavior: ScrollConfiguration.of(
-                  context,
-                ).copyWith(scrollbars: false),
-                child: SingleChildScrollView(
-                  child: Padding(
-                    padding: const EdgeInsets.all(15.0),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      mainAxisAlignment: MainAxisAlignment.end,
-                      children: [
-                        Text(
-                          'Вопрос ${_currentQuestionIndex + 1} / ${questions.length}',
-                          style: TextStyle(
-                            fontSize: 16,
-                            color: AppColors.softOrange,
-                          ),
-                        ),
-                        SizedBox(height: 5),
-                        Text(
-                          currentQuestion.questionText,
-                          style: TextStyle(
-                            fontSize: 24,
-                            fontWeight: FontWeight.bold,
-                            color: AppColors.middlePurple,
-                          ),
-                        ),
-                        SizedBox(height: 20),
-                        Theme(
-                          data: Theme.of(context).copyWith(
-                            unselectedWidgetColor: AppColors.lightPurple,
-                            radioTheme: RadioThemeData(
-                              fillColor: WidgetStateProperty.resolveWith<Color>(
-                                (states) => AppColors.lightPurple,
-                              ),
-                            ),
-                          ),
-                          child: Column(
-                            children: [
-                              RadioListTile<String>(
-                                title: Text(
-                                  currentQuestion.option1,
-                                  style: TextStyle(
-                                    fontSize: 18,
-                                    color: AppColors.lightPurple,
-                                  ),
-                                ),
-                                value: currentQuestion.option1,
-                                groupValue: _selectedAnswer,
-                                onChanged:
-                                    (value) =>
-                                        setState(() => _selectedAnswer = value),
-                              ),
-                              RadioListTile<String>(
-                                title: Text(
-                                  currentQuestion.option2,
-                                  style: TextStyle(
-                                    fontSize: 18,
-                                    color: AppColors.lightPurple,
-                                  ),
-                                ),
-                                value: currentQuestion.option2,
-                                groupValue: _selectedAnswer,
-                                onChanged:
-                                    (value) =>
-                                        setState(() => _selectedAnswer = value),
-                              ),
-                              RadioListTile<String>(
-                                title: Text(
-                                  currentQuestion.option3,
-                                  style: TextStyle(
-                                    fontSize: 18,
-                                    color: AppColors.lightPurple,
-                                  ),
-                                ),
-                                value: currentQuestion.option3,
-                                groupValue: _selectedAnswer,
-                                onChanged:
-                                    (value) =>
-                                        setState(() => _selectedAnswer = value),
-                              ),
-                            ],
-                          ),
-                        ),
-                        SizedBox(height: 20),
-                        Center(
-                          child: ElevatedButton(
-                            onPressed:
-                                _selectedAnswer == null || _isSubmitting
-                                    ? null
-                                    : _submitAnswer,
-                            style: ElevatedButton.styleFrom(
-                              foregroundColor: AppColors.orange,
-                              backgroundColor: AppColors.white,
-                              side: BorderSide(
-                                color: AppColors.orange,
-                                width: 2.5,
-                              ),
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(8),
-                              ),
-                              padding: EdgeInsets.symmetric(
-                                horizontal: 20,
-                                vertical: 15,
-                              ),
-                            ),
-                            child:
-                                _isSubmitting
-                                    ? CircularProgressIndicator(
-                                      color: Colors.white,
-                                    )
-                                    : Text(
-                                      style: TextStyle(
-                                        fontSize: 24,
-                                        fontWeight: FontWeight.w600,
-                                        color: AppColors.orange,
-                                      ),
-                                      _currentQuestionIndex ==
-                                              questions.length - 1
-                                          ? 'Завершить'.toUpperCase()
-                                          : 'Далее'.toUpperCase(),
-                                    ),
-                          ),
-                        ),
-                      ],
                     ),
-                  ),
+                    Padding(
+                      padding: const EdgeInsets.all(15.0),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            'Вопрос ${_currentQuestionIndex + 1} / ${questions.length}',
+                            style: TextStyle(
+                              fontSize: 16,
+                              color: AppColors.softOrange,
+                            ),
+                          ),
+                          SizedBox(height: 5),
+                          Text(
+                            currentQuestion.questionText,
+                            style: TextStyle(
+                              fontSize: 24,
+                              fontWeight: FontWeight.bold,
+                              color: AppColors.middlePurple,
+                            ),
+                          ),
+                          SizedBox(height: 20),
+                          Theme(
+                            data: Theme.of(context).copyWith(
+                              unselectedWidgetColor: AppColors.lightPurple,
+                              radioTheme: RadioThemeData(
+                                fillColor: WidgetStateProperty.resolveWith<Color>(
+                                      (states) => AppColors.lightPurple,
+                                ),
+                              ),
+                            ),
+                            child: Column(
+                              children: [
+                                RadioListTile<String>(
+                                  title: Text(
+                                    currentQuestion.option1,
+                                    style: TextStyle(
+                                      fontSize: 18,
+                                      color: AppColors.lightPurple,
+                                    ),
+                                  ),
+                                  value: currentQuestion.option1,
+                                  groupValue: _selectedAnswer,
+                                  onChanged: (value) =>
+                                      setState(() => _selectedAnswer = value),
+                                ),
+                                RadioListTile<String>(
+                                  title: Text(
+                                    currentQuestion.option2,
+                                    style: TextStyle(
+                                      fontSize: 18,
+                                      color: AppColors.lightPurple,
+                                    ),
+                                  ),
+                                  value: currentQuestion.option2,
+                                  groupValue: _selectedAnswer,
+                                  onChanged: (value) =>
+                                      setState(() => _selectedAnswer = value),
+                                ),
+                                RadioListTile<String>(
+                                  title: Text(
+                                    currentQuestion.option3,
+                                    style: TextStyle(
+                                      fontSize: 18,
+                                      color: AppColors.lightPurple,
+                                    ),
+                                  ),
+                                  value: currentQuestion.option3,
+                                  groupValue: _selectedAnswer,
+                                  onChanged: (value) =>
+                                      setState(() => _selectedAnswer = value),
+                                ),
+                              ],
+                            ),
+                          ),
+                          SizedBox(height: 20),
+                          Center(
+                            child: ElevatedButton(
+                              onPressed: _selectedAnswer == null || _isSubmitting
+                                  ? null
+                                  : _submitAnswer,
+                              style: ElevatedButton.styleFrom(
+                                foregroundColor: AppColors.orange,
+                                backgroundColor: AppColors.white,
+                                side: BorderSide(
+                                  color: AppColors.orange,
+                                  width: 2.5,
+                                ),
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(8),
+                                ),
+                                padding: EdgeInsets.symmetric(
+                                  horizontal: 20,
+                                  vertical: 15,
+                                ),
+                              ),
+                              child: _isSubmitting
+                                  ? CircularProgressIndicator(
+                                color: Colors.white,
+                              )
+                                  : Text(
+                                style: TextStyle(
+                                  fontSize: 24,
+                                  fontWeight: FontWeight.w600,
+                                  color: AppColors.orange,
+                                ),
+                                _currentQuestionIndex ==
+                                    questions.length - 1
+                                    ? 'Завершить'.toUpperCase()
+                                    : 'Далее'.toUpperCase(),
+                              ),
+                            ),
+                          ),
+                          SizedBox(height: 20), // Добавлен отступ снизу
+                        ],
+                      ),
+                    ),
+                  ],
                 ),
               ),
-              Expanded(child: Container()),
-            ],
+            ),
           );
         },
       ),

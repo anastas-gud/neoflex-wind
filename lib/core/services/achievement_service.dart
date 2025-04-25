@@ -4,13 +4,18 @@ import 'package:http/http.dart' as http;
 import 'package:neoflex_quest/core/models/achievement.dart';
 import 'package:neoflex_quest/core/models/user_achievement.dart';
 import 'package:neoflex_quest/core/services/data_service.dart';
+import 'package:neoflex_quest/core/services/user_service.dart';
 
 import '../constants/strings.dart';
 import '../database/database_service.dart';
 
 class AchievementService {
   final http.Client _client;
-  AchievementService({http.Client? client}) : _client = client ?? http.Client();
+  final UserService _userService;
+
+  AchievementService({http.Client? client, required UserService userService})
+      : _client = client ?? http.Client(),
+        _userService = userService;
 
   // Получаем все возможные достижения
   Future<List<Achievement>> getAchievements() async {
@@ -47,8 +52,42 @@ class AchievementService {
       throw Exception(jsonDecode(response.body)['message'] ?? 'Failed to load user achievements');
     }
   }
-  //
-  // // Разблокируем достижение для пользователя
+
+  Future<bool> hasAchievement(int userId, int achievementId) async {
+    final response = await _client.get(
+      Uri.parse('${AppStrings.baseUrl}/achievement/has?userId=$userId&achievementId=$achievementId'),
+      headers: {'Accept': 'application/json'},
+    );
+
+    if (response.statusCode == 200) {
+      return jsonDecode(response.body)['hasAchievement'] as bool;
+    }
+    throw Exception('Failed to check achievement');
+  }
+
+  Future<bool> unlockAchievement(int userId, int achievementId) async {
+    final response = await _client.post(
+      Uri.parse('${AppStrings.baseUrl}/achievement/unlock'),
+      headers: {'Content-Type': 'application/json'},
+      body: jsonEncode({
+        'userId': userId,
+        'achievementId': achievementId,
+      }),
+    );
+
+    if (response.statusCode == 201) {
+      final data = jsonDecode(response.body);
+      final points = data['pointsReward'] as int;
+
+      // Начисляем мандаринки через UserService
+      await _userService.updateUserPoints(userId, points);
+
+      return true;
+    }
+    throw Exception(jsonDecode(response.body)['message'] ?? 'Failed to unlock achievement');
+  }
+
+  // Разблокируем достижение для пользователя
   // Future<bool> unlockAchievement({
   //   required int userId,
   //   required int achievementId,
@@ -96,8 +135,8 @@ class AchievementService {
   //     await conn.close();
   //   }
   // }
-  //
-  // // Проверяем и разблокируем достижения автоматически
+
+  // Проверяем и разблокируем достижения автоматически
   // Future<bool> checkAndUnlockAchievements(int userId) async {
   //   bool anyUnlocked = false;
   //   final conn = await _databaseService.getConnection();

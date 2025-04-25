@@ -10,6 +10,8 @@ import 'package:neoflex_quest/features/time_machine/presentation/screens/quiz_sc
 import 'package:neoflex_quest/features/time_machine/presentation/widgets/era_card.dart';
 import 'package:neoflex_quest/shared/widgets/small_mascot_widget.dart';
 
+import '../../../../core/services/achievement_service.dart';
+
 class TimeMachineScreen extends StatefulWidget {
   final int userId;
   final VoidCallback onUpdate;
@@ -40,9 +42,58 @@ class _TimeMachineScreenState extends State<TimeMachineScreen> {
     _loadAttempts();
   }
 
+  final AchievementService _achievementService = AchievementService(
+    userService: UserService(),
+  );
+
+  // Добавляем этот метод для проверки достижений
+  Future<void> _checkAchievements() async {
+    try {
+      // Проверяем достижение "Аномалия" (все эпохи пройдены)
+      const anomalyAchievementId = 3;
+
+      // Проверяем, есть ли уже это достижение
+      final hasAchievement = await _achievementService.hasAchievement(
+          widget.userId,
+          anomalyAchievementId
+      );
+
+      // Если достижения нет и все попытки использованы
+      if (!hasAchievement && _areAllErasCompleted()) {
+        final unlocked = await _achievementService.unlockAchievement(
+          widget.userId,
+          anomalyAchievementId,
+        );
+
+        if (unlocked) {
+          // Показываем уведомление о получении достижения
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('🎉 Получено достижение "Аномалия"!'),
+              duration: Duration(seconds: 3),
+              behavior: SnackBarBehavior.floating,
+            ),
+          );
+
+          // Обновляем UI пользователя
+          widget.onUpdate();
+        }
+      }
+    } catch (e) {
+      print('Ошибка проверки достижений: $e');
+    }
+  }
+
+  // Проверяем, что все эпохи пройдены (попытки <= 0)
+  bool _areAllErasCompleted() {
+    return _attemptsRemaining.values.every((attempts) => attempts <= 0);
+  }
+
+  // Обновляем метод _loadAttempts
   Future<void> _loadAttempts() async {
-    final List<TestAttempt> usersTestAttempts = await _timeMachineService
-        .findUsersTestAttempts(widget.userId);
+    final List<TestAttempt> usersTestAttempts =
+    await _timeMachineService.findUsersTestAttempts(widget.userId);
+
     setState(() {
       for (TestAttempt attempt in usersTestAttempts) {
         String displayEra = _getDisplayEraName(attempt.era);
@@ -54,6 +105,9 @@ class _TimeMachineScreenState extends State<TimeMachineScreen> {
         }
       }
     });
+
+    // После загрузки попыток проверяем достижения
+    await _checkAchievements();
   }
 
   String _getDisplayEraName(String dbEra) {

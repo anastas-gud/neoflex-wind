@@ -1,11 +1,13 @@
 import 'dart:math';
 
 import 'package:flutter/material.dart';
+import 'package:neoflex_quest/core/constants/strings.dart';
 import 'package:neoflex_quest/core/models/shop_item.dart';
 import 'package:neoflex_quest/core/services/shop_service.dart';
 import 'package:neoflex_quest/core/services/data_service.dart';
 import 'package:neoflex_quest/shared/widgets/small_mascot_widget.dart';
 
+import '../../../../core/constants/colors.dart';
 import '../../../../shared/widgets/mascot_widget.dart';
 import '../../../../core/database/database_service.dart';
 
@@ -112,14 +114,19 @@ class _ShopScreenState extends State<ShopScreen> {
                 children: [
                   SizedBox(height: 15),
                   Text(
-                    "Торговая точка",
-                    style: TextStyle(fontSize: 25, fontWeight: FontWeight.bold),
+                    'Торговая точка'.toUpperCase(),
+                    style: const TextStyle(
+                      fontSize: 25,
+                      color: AppColors.pink,
+                      fontWeight: FontWeight.bold,
+                      letterSpacing: -1.8,
+                    ),
                   ),
-                  MascotWidget(
-                    message: 'Инициализация торгового протокола…\n'
-                        'Внимание, юнит! Здесь циркулируют Мандаринки – валюта умных и быстрых. '
-                        'Обменивай, трать, получай артефакты.\n'
-                        'Рекомендация: действуйте без задержек!',
+                  SmallMascotWidget(
+                    message: AppStrings.shopDescription,
+                    imagePath: 'assets/images/shop.png',
+                    boxWidth: _boxWidth,
+                    shift: 110,
                   ),
                   SizedBox(height: 15),
                   Divider(),
