@@ -24,11 +24,9 @@ class _AchievementsScreenState extends State<AchievementsScreen> {
   @override
   void initState() {
     super.initState();
-    final achievementService = AchievementService(
-      databaseService: DatabaseService(),
-    );
+    final achievementService = AchievementService();
 
-    _achievementsFuture = achievementService.getAllAchievements();
+    _achievementsFuture = achievementService.getAchievements();
     _userAchievementsFuture = achievementService.getUserAchievements(widget.userId);
   }
 

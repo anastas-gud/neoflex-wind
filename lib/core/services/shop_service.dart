@@ -16,7 +16,8 @@ class ShopService {
     );
 
     if (response.statusCode == 200) {
-      final List<dynamic> data = jsonDecode(response.body);
+      final String responseBody = utf8.decode(response.bodyBytes);
+      final List<dynamic> data = jsonDecode(responseBody);
       return data.map((item) => ShopItem.fromJson(item)).toList();
     } else {
       throw Exception('Failed to load shop items: ${response.statusCode}');
@@ -30,7 +31,7 @@ class ShopService {
   // Покупка товара
   Future<Map<String, dynamic>> purchaseItem(int userId, int itemId) async {
     final response = await _client.post(
-      Uri.parse('${AppStrings.baseUrl}/shop/purchases'),
+      Uri.parse('${AppStrings.baseUrl}/shop/purchases/'),
       headers: {'Content-Type': 'application/json'},
       body: jsonEncode({
         'userId': userId,
@@ -44,7 +45,7 @@ class ShopService {
       throw Exception(jsonDecode(response.body)['message'] ?? 'Purchase failed');
     }
   }
-
+  // todo методы не используются и не проверены, скорее всего не работают
   Future<List<Map<String, dynamic>>> getPurchaseHistory(int userId) async {
     final response = await _client.get(
       Uri.parse('${AppStrings.baseUrl}/shop/purchases?userId=$userId'),

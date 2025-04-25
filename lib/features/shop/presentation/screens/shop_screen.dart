@@ -63,29 +63,20 @@ class _ShopScreenState extends State<ShopScreen> {
     try {
       final response = await shopService.purchaseItem(widget.userId, item.id);
 
-      // Проверяем статус покупки в ответе
-      if (response['success'] == true) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(response['message'] ?? 'Покупка совершена!'),
-            duration: const Duration(seconds: 2),
-          ),
-        );
+      // Проверяем статус код вместо поля 'success'
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Покупка совершена успешно!'),
+          duration: const Duration(seconds: 2),
+        ),
+      );
 
-        // Обновляем состояние
-        widget.onUpdate();
-        setState(() {
-          _itemsFuture = _loadItems();
-        });
-      } else {
-        // Если success == false, но статус 201
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(response['message'] ?? 'Покупка не завершена'),
-            backgroundColor: Colors.orange,
-          ),
-        );
-      }
+      // Обновляем состояние
+      widget.onUpdate();
+      setState(() {
+        _itemsFuture = _loadItems();
+      });
+
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
