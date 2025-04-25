@@ -67,7 +67,7 @@ class AchievementService {
 
   Future<bool> unlockAchievement(int userId, int achievementId) async {
     final response = await _client.post(
-      Uri.parse('${AppStrings.baseUrl}/achievement/unlock'),
+      Uri.parse('${AppStrings.baseUrl}/achievement/unlock/'),
       headers: {'Content-Type': 'application/json'},
       body: jsonEncode({
         'userId': userId,
