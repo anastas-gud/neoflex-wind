@@ -15,11 +15,8 @@ class ShopScreen extends StatefulWidget {
   final int userId;
   final VoidCallback onUpdate;
 
-  const ShopScreen({
-    required this.userId,
-    required this.onUpdate,
-    Key? key,
-  }) : super(key: key);
+  const ShopScreen({required this.userId, required this.onUpdate, Key? key})
+    : super(key: key);
 
   @override
   _ShopScreenState createState() => _ShopScreenState();
@@ -55,7 +52,8 @@ class _ShopScreenState extends State<ShopScreen> {
       _tapCount = 0;
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-            content: Text('Секретное достижение разблокировано! +10 мандаринок')),
+          content: Text('Секретное достижение разблокировано! +10 мандаринок'),
+        ),
       );
     }
   }
@@ -78,7 +76,6 @@ class _ShopScreenState extends State<ShopScreen> {
       setState(() {
         _itemsFuture = _loadItems();
       });
-
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
@@ -107,8 +104,9 @@ class _ShopScreenState extends State<ShopScreen> {
 
           double _boxWidth = min(MediaQuery.of(context).size.width * 0.9, 450);
           return ScrollConfiguration(
-            behavior:
-            ScrollConfiguration.of(context).copyWith(scrollbars: false),
+            behavior: ScrollConfiguration.of(
+              context,
+            ).copyWith(scrollbars: false),
             child: SingleChildScrollView(
               child: Column(
                 children: [
@@ -146,33 +144,59 @@ class _ShopScreenState extends State<ShopScreen> {
                                 item.imagePath,
                                 width: 50,
                                 height: 50,
-                                errorBuilder: (_, __, ___) =>
-                                    Icon(Icons.shopping_bag, size: 50),
+                                errorBuilder:
+                                    (_, __, ___) => Icon(
+                                      Icons.shopping_bag,
+                                      size: 50,
+                                      color: AppColors.lightPurple,
+                                    ),
                               ),
                               SizedBox(width: 12),
                               Expanded(
                                 child: Column(
-                                    crossAxisAlignment: CrossAxisAlignment.start,
-                                    children: [
-                                      Text(item.name,
-                                          style: TextStyle(
-                                              fontWeight: FontWeight.bold)),
-                                      SizedBox(height: 4),
-                                      Text(item.description,
-                                          style: TextStyle(fontSize: 12)),
-                                      SizedBox(height: 4),
-                                      Text('${item.price} мандаринок',
-                                          style: TextStyle(
-                                              color: Colors.orange,
-                                              fontWeight: FontWeight.bold)),
-                                    ]),
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(
+                                      item.name,
+                                      style: TextStyle(
+                                        fontWeight: FontWeight.bold,
+                                        color: AppColors.middlePurple,
+                                      ),
+                                    ),
+                                    SizedBox(height: 4),
+                                    Text(
+                                      item.description,
+                                      style: TextStyle(
+                                        fontSize: 12,
+                                        color: AppColors.darkPurple,
+                                      ),
+                                    ),
+                                    SizedBox(height: 4),
+                                    Text(
+                                      '${item.price} мандаринок',
+                                      style: TextStyle(
+                                        color: Colors.orange,
+                                        fontWeight: FontWeight.bold,
+                                      ),
+                                    ),
+                                  ],
+                                ),
                               ),
                               SizedBox(width: 12),
                               SizedBox(
                                 height: 40, // Фиксированная высота кнопки
                                 child: ElevatedButton(
+                                  style: ElevatedButton.styleFrom(
+                                    backgroundColor: AppColors.softOrange,
+                                  ),
                                   onPressed: () => _buyItem(item),
-                                  child: Text('Купить'),
+                                  child: Text(
+                                    'Купить'.toUpperCase(),
+                                    style: TextStyle(
+                                      color: AppColors.delicatePink,
+                                      fontWeight: FontWeight.w600,
+                                    ),
+                                  ),
                                 ),
                               ),
                             ],

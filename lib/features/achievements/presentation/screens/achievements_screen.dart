@@ -33,7 +33,9 @@ class _AchievementsScreenState extends State<AchievementsScreen> {
     final achievementService = AchievementService(userService: UserService());
 
     _achievementsFuture = achievementService.getAchievements();
-    _userAchievementsFuture = achievementService.getUserAchievements(widget.userId);
+    _userAchievementsFuture = achievementService.getUserAchievements(
+      widget.userId,
+    );
   }
 
   @override
@@ -55,77 +57,106 @@ class _AchievementsScreenState extends State<AchievementsScreen> {
 
           double _boxWidth = min(MediaQuery.of(context).size.width * 0.9, 450);
 
-          return SingleChildScrollView(
-            padding: EdgeInsets.only(top: 16), // Добавили отступ сверху
-            child: Column(
-              children: [
-                SizedBox(height: 15),
-                Text(
-                  'Галактика достижений'.toUpperCase(),
-                  style: const TextStyle(
-                    fontSize: 25,
-                    color: AppColors.pink,
-                    fontWeight: FontWeight.bold,
-                    letterSpacing: -1.8,
+          return ScrollConfiguration(
+            behavior: ScrollConfiguration.of(
+              context,
+            ).copyWith(scrollbars: false),
+            child: SingleChildScrollView(
+              padding: EdgeInsets.only(top: 16), // Добавили отступ сверху
+              child: Column(
+                children: [
+                  SizedBox(height: 15),
+                  Text(
+                    'Галактика достижений'.toUpperCase(),
+                    style: const TextStyle(
+                      fontSize: 25,
+                      color: AppColors.pink,
+                      fontWeight: FontWeight.bold,
+                      letterSpacing: -1.8,
+                    ),
                   ),
-                ),
-                SmallMascotWidget(
-                  message: AppStrings.achievementDescription,
-                  imagePath: 'assets/images/achievement.png',
-                  boxWidth: _boxWidth,
-                  shift: 110,
-                ),
-                Padding(
-                  padding: EdgeInsets.all(16),
-                  child: Column(
-                    children: achievements.map((achievement) {
-                      final isUnlocked = userAchievements.any((ua) => ua.achievementId == achievement.id);
+                  SmallMascotWidget(
+                    message: AppStrings.achievementDescription,
+                    imagePath: 'assets/images/achievement.png',
+                    boxWidth: _boxWidth,
+                    shift: 110,
+                  ),
+                  Padding(
+                    padding: EdgeInsets.all(16),
+                    child: Column(
+                      children:
+                          achievements.map((achievement) {
+                            final isUnlocked = userAchievements.any(
+                              (ua) => ua.achievementId == achievement.id,
+                            );
 
-                      return Card(
-                        color: isUnlocked ? Colors.orange[50] : Colors.grey[200],
-                        margin: EdgeInsets.only(bottom: 16),
-                        child: ListTile(
-                          leading: achievement.isSecret && !isUnlocked
-                              ? Icon(Icons.question_mark, size: 40) // Иконка "?" для секретных
-                              : Image.asset(
-                            achievement.iconPath,
-                            width: 40,
-                            height: 40,
-                            errorBuilder: (_, __, ___) => Icon(Icons.star, size: 40),
-                          ),
-                          title: Text(
-                            achievement.name, // Название показывается всегда
-                            style: TextStyle(
-                              fontWeight: FontWeight.bold,
-                              color: isUnlocked ? Colors.black : Colors.grey,
-                            ),
-                          ),
-                          subtitle: Text(
-                            achievement.isSecret && !isUnlocked
-                                ? "Разблокируйте, чтобы узнать описание"
-                                : achievement.description,
-                            style: TextStyle(
-                              color: isUnlocked ? Colors.black87 : Colors.grey,
-                            ),
-                          ),
-                          trailing: isUnlocked
-                              ? Column(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              Icon(Icons.check_circle, color: Colors.green),
-                              Text(
-                                '+${achievement.pointsReward}',
-                                style: TextStyle(color: Colors.green),
+                            return Card(
+                              color:
+                                  isUnlocked
+                                      ? Colors.orange[50]
+                                      : Colors.grey[200],
+                              margin: EdgeInsets.only(bottom: 16),
+                              child: ListTile(
+                                leading:
+                                    achievement.isSecret && !isUnlocked
+                                        ? Icon(
+                                          Icons.question_mark,
+                                          size: 40,
+                                        ) // Иконка "?" для секретных
+                                        : Image.asset(
+                                          achievement.iconPath,
+                                          width: 40,
+                                          height: 40,
+                                          errorBuilder:
+                                              (_, __, ___) =>
+                                                  Icon(Icons.star, size: 40),
+                                        ),
+                                title: Text(
+                                  achievement
+                                      .name, // Название показывается всегда
+                                  style: TextStyle(
+                                    fontWeight: FontWeight.bold,
+                                    color:
+                                        isUnlocked ? Colors.black : Colors.grey,
+                                  ),
+                                ),
+                                subtitle: Text(
+                                  achievement.isSecret && !isUnlocked
+                                      ? "Разблокируйте, чтобы узнать описание"
+                                      : achievement.description,
+                                  style: TextStyle(
+                                    color:
+                                        isUnlocked
+                                            ? Colors.black87
+                                            : Colors.grey,
+                                  ),
+                                ),
+                                trailing:
+                                    isUnlocked
+                                        ? Column(
+                                          mainAxisAlignment:
+                                              MainAxisAlignment.center,
+                                          children: [
+                                            Icon(
+                                              Icons.check_circle,
+                                              color: Colors.green,
+                                            ),
+                                            Text(
+                                              '+${achievement.pointsReward}',
+                                              style: TextStyle(
+                                                color: Colors.green,
+                                              ),
+                                            ),
+                                          ],
+                                        )
+                                        : Icon(Icons.lock, color: Colors.red),
                               ),
-                            ],
-                          )
-                              : Icon(Icons.lock, color: Colors.red),
-                        ),
-                      );
-                    }).toList(),
+                            );
+                          }).toList(),
+                    ),
                   ),
-                ),
-              ],
+                ],
+              ),
             ),
           );
         },
