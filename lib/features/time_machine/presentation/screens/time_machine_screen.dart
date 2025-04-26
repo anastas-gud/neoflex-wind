@@ -49,47 +49,66 @@ class _TimeMachineScreenState extends State<TimeMachineScreen> {
   // Добавляем этот метод для проверки достижений
   Future<void> _checkAchievements() async {
     try {
-      // Проверяем достижение "Аномалия" (все эпохи пройдены)
-      const anomalyAchievementId = 4;
+      // ID достижений
+      const chronosaurAchievementId = 1; // Хронозавр - все эпохи полностью пройдены
+      const anomalyAchievementId = 4; // Аномалия - все эпохи пройдены хотя бы по 1 разу
 
-      // Проверяем, есть ли уже это достижение
-      final hasAchievement = await _achievementService.hasAchievement(
-          widget.userId,
-          anomalyAchievementId
-      );
+      // Проверяем, есть ли уже эти достижения
+      final hasAnomaly = await _achievementService.hasAchievement(
+          widget.userId, anomalyAchievementId);
+      final hasChronosaur = await _achievementService.hasAchievement(
+          widget.userId, chronosaurAchievementId);
 
-      // Если достижения нет и все попытки использованы
-      if (!hasAchievement && _areAllErasCompleted()) {
-        final unlocked = await _achievementService.unlockAchievement(
+      // Проверяем условия для достижений
+      final allErasFullyCompleted = _areAllErasFullyCompleted();
+      final allErasPlayedAtLeastOnce = _areAllErasPlayedAtLeastOnce();
+
+      // Разблокируем "Аномалия" если нужно
+      if (!hasAnomaly && allErasPlayedAtLeastOnce) {
+        await _achievementService.unlockAchievement(
           widget.userId,
           anomalyAchievementId,
         );
+        _showAchievementUnlocked('Аномалия');
+      }
 
-        if (unlocked) {
-          // Показываем уведомление о получении достижения
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text('🎉 Получено достижение "Аномалия"!'),
-              duration: Duration(seconds: 3),
-              behavior: SnackBarBehavior.floating,
-            ),
-          );
-
-          // Обновляем UI пользователя
-          widget.onUpdate();
-        }
+      // Разблокируем "Хронозавр" если нужно
+      if (!hasChronosaur && allErasFullyCompleted) {
+        await _achievementService.unlockAchievement(
+          widget.userId,
+          chronosaurAchievementId,
+        );
+        _showAchievementUnlocked('Хронозавр');
       }
     } catch (e) {
       print('Ошибка проверки достижений: $e');
     }
   }
 
-  // Проверяем, что все эпохи пройдены (попытки <= 0)
-  bool _areAllErasCompleted() {
+  void _showAchievementUnlocked(String achievementName) {
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('🎉 Получено достижение "$achievementName"! +50 🍊'),
+          duration: Duration(seconds: 5),
+          behavior: SnackBarBehavior.floating,
+        ),
+      );
+    });
+    widget.onUpdate();
+  }
+
+  // Проверяем, что все эпохи полностью пройдены (попытки <= 0)
+  bool _areAllErasFullyCompleted() {
     return _attemptsRemaining.values.every((attempts) => attempts <= 0);
   }
 
-  // Обновляем метод _loadAttempts
+  // Проверяем, что все эпохи пройдены хотя бы по одному разу (попытки < 3)
+  bool _areAllErasPlayedAtLeastOnce() {
+    return _attemptsRemaining.values.every((attempts) => attempts < 3);
+  }
+
+  // Обновленный метод _loadAttempts
   Future<void> _loadAttempts() async {
     final List<TestAttempt> usersTestAttempts =
     await _timeMachineService.findUsersTestAttempts(widget.userId);
@@ -99,9 +118,7 @@ class _TimeMachineScreenState extends State<TimeMachineScreen> {
         String displayEra = _getDisplayEraName(attempt.era);
         int used = attempt.attemptsUsed;
         if (_attemptsRemaining.containsKey(displayEra)) {
-          if (3 - used < _attemptsRemaining[displayEra]!) {
-            _attemptsRemaining[displayEra] = 3 - used;
-          }
+          _attemptsRemaining[displayEra] = 3 - used;
         }
       }
     });

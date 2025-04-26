@@ -3,6 +3,9 @@ import 'package:neoflex_quest/core/constants/colors.dart';
 import 'package:neoflex_quest/core/models/education_item.dart';
 import 'package:neoflex_quest/core/services/education_service.dart';
 
+import '../../../../core/services/achievement_service.dart';
+import '../../../../core/services/user_service.dart';
+
 class EducationGameScreen extends StatefulWidget {
   final int userId;
   final VoidCallback onUpdate;
@@ -28,6 +31,7 @@ class _EducationGameScreenState extends State<EducationGameScreen> {
   bool _attemptsExceeded = false;
 
   final EducationService _educationService = EducationService();
+  final AchievementService _achievementService = AchievementService(userService: UserService());
 
   @override
   void initState() {
@@ -127,47 +131,116 @@ class _EducationGameScreenState extends State<EducationGameScreen> {
     await _incrementAttempts();
     widget.onUpdate();
 
-    setState(() => _isChecking = false);
-
-    final correct =
-        _topContainer
-            .where((item) => item.correctCategory == 'children')
-            .length +
+    final correct = _topContainer
+        .where((item) => item.correctCategory == 'children')
+        .length +
         _bottomContainer
             .where((item) => item.correctCategory == 'adults')
             .length;
     final total = _topContainer.length + _bottomContainer.length;
 
+    // Проверяем, все ли ответы правильные (10 из 10)
+    final allCorrect = correct == 10;
+    // Проверяем, все ли модули размещены (10 из 10)
+    final allPlaced = total == 10;
+
+    if (allCorrect) {
+      try {
+        // ID достижения "Неопедия" (должен соответствовать вашему бэкенду)
+        const neoPediaAchievementId = 2;
+
+        // Проверяем, есть ли уже достижение
+        final hasAchievement = await _achievementService.hasAchievement(
+            widget.userId,
+            neoPediaAchievementId
+        );
+
+        // Если достижения нет - разблокируем
+        if (!hasAchievement) {
+          final unlocked = await _achievementService.unlockAchievement(
+            widget.userId,
+            neoPediaAchievementId,
+          );
+
+          if (unlocked) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Text('🎉 Получено достижение "Неопедия"! +50 🍊'),
+                duration: Duration(seconds: 5),
+                behavior: SnackBarBehavior.floating,
+              ),
+            );
+            widget.onUpdate();
+          }
+        }
+      } catch (e) {
+        debugPrint('Ошибка при проверке достижения: $e');
+      }
+    }
+    if (allPlaced) {
+      try {
+        const sorterAchievementId = 5; // ID достижения "Ответственный сортировщик"
+        final hasAchievement = await _achievementService.hasAchievement(
+            widget.userId,
+            sorterAchievementId
+        );
+
+        if (!hasAchievement) {
+          final unlocked = await _achievementService.unlockAchievement(
+            widget.userId,
+            sorterAchievementId,
+          );
+
+          if (unlocked) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Text(
+                    '🎉 Получено достижение "Ответственный сортировщик"! +30 🍊'),
+                duration: Duration(seconds: 5),
+                behavior: SnackBarBehavior.floating,
+              ),
+            );
+            widget.onUpdate();
+          }
+        }
+      } catch (e) {
+        debugPrint(
+            'Ошибка при проверке достижения "Ответственный сортировщик": $e');
+      }
+    }
+
+    setState(() => _isChecking = false);
+
     showDialog(
       context: context,
       barrierDismissible: false,
-      builder:
-          (context) => AlertDialog(
-            title: Text(
-              'Результаты'.toUpperCase(),
-              style: TextStyle(color: AppColors.orange),
-            ),
-            content: Text(
-              'Вы правильно отсортировали $correct из $total элементов.\n'
+      builder: (context) => AlertDialog(
+        title: Text(
+          'Результаты'.toUpperCase(),
+          style: TextStyle(color: AppColors.orange),
+        ),
+        content: Text(
+          'Вы правильно отсортировали $correct из $total элементов.\n'
               'Начислено ${correct * 2} мандаринок.\n'
-              'Осталось попыток: $_attemptsLeft',
-              style: TextStyle(color: AppColors.purple, fontSize: 16),
+              'Осталось попыток: $_attemptsLeft' +
+              (allCorrect ? '\n\nПоздравляем! Вы выполнили задание идеально!' : ''),
+          style: TextStyle(color: AppColors.purple, fontSize: 16),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () {
+              Navigator.pop(context);
+              if (_attemptsLeft <= 0) {
+                Navigator.pop(context);
+              }
+            },
+            child: Text(
+              'OK',
+              style: TextStyle(color: AppColors.softOrange),
             ),
-            actions: [
-              TextButton(
-                onPressed: () {
-                  Navigator.pop(context);
-                  if (_attemptsLeft <= 0) {
-                    Navigator.pop(context);
-                  }
-                },
-                child: Text(
-                  'OK',
-                  style: TextStyle(color: AppColors.softOrange),
-                ),
-              ),
-            ],
           ),
+        ],
+      ),
     );
   }
 
